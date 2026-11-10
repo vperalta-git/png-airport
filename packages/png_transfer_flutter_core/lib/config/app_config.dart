@@ -13,6 +13,11 @@ class AppConfig {
   static const databasePort = 9000;
   static const storagePort = 9199;
 
+  /// A hosted visitor's localhost is not the operator's review computer.
+  static bool allowsLocalWebServices(Uri page) =>
+      ['http', 'https'].contains(page.scheme) &&
+      ['127.0.0.1', 'localhost', '10.0.2.2'].contains(page.host);
+
   static void validate() {
     if (environment != 'local') {
       throw StateError('Only local emulator mode is supported in Batch A.');

@@ -1,11 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../config/app_config.dart';
 import '../config/demo_mode.dart';
 import '../config/local_firebase.dart';
 import '../screens/mobile_demo_app.dart';
 import '../services/png_api_client.dart';
 import '../theme/aviation_theme.dart';
 import 'connected_session.dart';
+import 'connected_website_landing.dart';
 
 const connectedReviewBuild = bool.fromEnvironment('AEROTRANS_CONNECTED_REVIEW');
 
@@ -15,8 +18,8 @@ Future<void> runConnectedReviewApp() async {
     runApp(MaterialApp(
         theme: AviationTheme.lightTheme,
         home: const Scaffold(
-            body:
-                Center(child: Text('Use the connected APK build command.')))));
+            body: Center(
+                child: Text('Use the connected review build command.')))));
     return;
   }
   runApp(const ConnectedReviewBootstrap());
@@ -25,8 +28,9 @@ Future<void> runConnectedReviewApp() async {
 class ConnectedReviewBootstrap extends StatefulWidget {
   final Future<void> Function()? initialize;
   final WidgetBuilder? readyBuilder;
+  final Uri? webOrigin;
   const ConnectedReviewBootstrap(
-      {super.key, this.initialize, this.readyBuilder});
+      {super.key, this.initialize, this.readyBuilder, this.webOrigin});
   @override
   State<ConnectedReviewBootstrap> createState() =>
       _ConnectedReviewBootstrapState();
@@ -35,6 +39,7 @@ class ConnectedReviewBootstrap extends StatefulWidget {
 class _ConnectedReviewBootstrapState extends State<ConnectedReviewBootstrap> {
   bool busy = false, ready = false;
   String? error;
+  bool get website => kIsWeb || widget.webOrigin != null;
   @override
   void initState() {
     super.initState();
@@ -48,13 +53,20 @@ class _ConnectedReviewBootstrapState extends State<ConnectedReviewBootstrap> {
       error = null;
     });
     try {
+      if (website &&
+          !AppConfig.allowsLocalWebServices(widget.webOrigin ?? Uri.base)) {
+        setState(() => error =
+            'Online services are not configured for this website. Sign-in and bookings are currently unavailable.');
+        return;
+      }
       await (widget.initialize ?? LocalFirebase.initialize)()
           .timeout(const Duration(seconds: 25));
       if (mounted) setState(() => ready = true);
     } catch (_) {
       if (mounted) {
-        setState(() => error =
-            'The review server is unavailable. Keep this phone connected to the '
+        setState(() => error = website
+            ? 'The review services are unavailable. Sign-in and bookings will be available when the server connection is restored.'
+            : 'The review server is unavailable. Keep this phone connected to the '
                 'review computer by USB and ask the operator to start the services. '
                 'Retry when the connection is restored.');
       }
@@ -67,43 +79,51 @@ class _ConnectedReviewBootstrapState extends State<ConnectedReviewBootstrap> {
   Widget build(BuildContext context) => ready
       ? widget.readyBuilder?.call(context) ?? const ConnectedReviewApp()
       : MaterialApp(
+          title: website ? 'AeroTrans Papua New Guinea' : 'AeroTrans Connected',
           debugShowCheckedModeBanner: false,
           theme: AviationTheme.lightTheme,
-          home: Scaffold(
-              appBar: AppBar(title: const Text('AeroTrans Connected')),
-              body: Center(
-                  child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(24),
-                          child:
-                              Column(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.connecting_airports,
-                                size: 60, color: AviationColors.primaryNavy),
-                            const SizedBox(height: 20),
-                            Text(
-                                busy
-                                    ? 'Connecting to review services'
-                                    : 'Connection needs attention',
-                                style:
-                                    Theme.of(context).textTheme.headlineSmall,
-                                textAlign: TextAlign.center),
-                            const SizedBox(height: 16),
-                            if (busy)
-                              const LinearProgressIndicator()
-                            else ...[
-                              DemoMessage(error!),
-                              const SizedBox(height: 16),
-                              FilledButton.icon(
-                                  onPressed: connect,
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text('Retry connection')),
-                            ],
-                            const SizedBox(height: 20),
-                            const Text(
-                                'Local backend review • Papua New Guinea\nAn APK alone does not provide remote server access.',
-                                textAlign: TextAlign.center),
-                          ]))))));
+          home: website
+              ? ConnectedWebsiteLanding(
+                  busy: busy, message: error, onRetry: connect)
+              : Scaffold(
+                  appBar: AppBar(title: const Text('AeroTrans Connected')),
+                  body: Center(
+                      child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 480),
+                          child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.connecting_airports,
+                                        size: 60,
+                                        color: AviationColors.primaryNavy),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                        busy
+                                            ? 'Connecting to review services'
+                                            : 'Connection needs attention',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall,
+                                        textAlign: TextAlign.center),
+                                    const SizedBox(height: 16),
+                                    if (busy)
+                                      const LinearProgressIndicator()
+                                    else ...[
+                                      DemoMessage(error!),
+                                      const SizedBox(height: 16),
+                                      FilledButton.icon(
+                                          onPressed: connect,
+                                          icon: const Icon(Icons.refresh),
+                                          label:
+                                              const Text('Retry connection')),
+                                    ],
+                                    const SizedBox(height: 20),
+                                    const Text(
+                                        'Local backend review • Papua New Guinea\nAn APK alone does not provide remote server access.',
+                                        textAlign: TextAlign.center),
+                                  ]))))));
 }
 
 class ConnectedReviewApp extends StatefulWidget {

@@ -78,8 +78,20 @@ building. Use an SPA fallback to index.html for application routes.
 
 The current build is an isolated local review application. Its configuration
 accepts only loopback backend/emulator hosts and intentionally refuses cloud
-fallback. Uploading the generated files does not create a working remote backend:
-the browser would try to contact services on the visitor's own computer.
+fallback. Public hosts display the AeroTrans website with a clear service-setup
+notice and unavailable sign-in. They do not probe the visitor's localhost or
+initialize Firebase with local settings. Uploading these files does not create
+a working remote backend or activate bookings.
+
+The website startup is separate from the phone connection screen, so hosted
+visitors are not shown USB/APK instructions. When running locally with verified
+services, the existing authenticated four-role application remains available.
+
+Public-startup verification: 14 focused session/startup tests passed, Flutter
+analysis found no issues, and the corrected release website compiled. Browser
+checks at 1440px and 390px on a virtual public HTTPS origin rendered the landing
+page with zero API/Firebase/localhost requests, disabled sign-in and safe retry.
+This is not a claim that hosted authentication or a Vercel deployment was tested.
 
 For a public, functional website the next deployment work must provide:
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:png_transfer_flutter_core/connected/connected_review_app.dart';
 import 'package:png_transfer_flutter_core/connected/connected_session.dart';
+import 'package:png_transfer_flutter_core/config/app_config.dart';
 import 'package:png_transfer_flutter_core/screens/mobile_demo_app.dart';
 import 'package:png_transfer_flutter_core/services/png_api_client.dart';
 import 'support/connected_review_fakes.dart';
@@ -17,6 +18,58 @@ Future<void> chooseRole(WidgetTester tester, String role) async {
 }
 
 void main() {
+  test('local review services are restricted to local browser origins', () {
+    expect(
+        AppConfig.allowsLocalWebServices(
+            Uri.parse('https://png-airport-kappa.vercel.app')),
+        isFalse);
+    expect(
+        AppConfig.allowsLocalWebServices(Uri.parse('https://example.invalid')),
+        isFalse);
+    expect(AppConfig.allowsLocalWebServices(Uri.parse('http://localhost:5001')),
+        isTrue);
+    expect(AppConfig.allowsLocalWebServices(Uri.parse('http://127.0.0.1:5001')),
+        isTrue);
+  });
+
+  testWidgets(
+      'public website opens without probing a visitor localhost or Firebase',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    int attempts = 0;
+    await tester.pumpWidget(ConnectedReviewBootstrap(
+        webOrigin: Uri.parse('https://png-airport-kappa.vercel.app'),
+        initialize: () async {
+          attempts++;
+        }));
+    await tester.pumpAndSettle();
+    expect(attempts, 0);
+    expect(find.textContaining('Airport transfers,'), findsOneWidget);
+    expect(find.text('Customer'), findsOneWidget);
+    expect(find.text('Control Room'), findsOneWidget);
+    expect(find.text('Driver'), findsOneWidget);
+    expect(find.text('Manager / Supervisor'), findsOneWidget);
+    expect(find.textContaining('USB'), findsNothing);
+    expect(find.textContaining('An APK'), findsNothing);
+    expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('website-sign-in')))
+            .onPressed,
+        isNull);
+    final retry = find.text('Check service availability');
+    await tester.ensureVisible(retry);
+    await tester.pumpAndSettle();
+    await tester.tap(retry);
+    await tester.pumpAndSettle();
+    expect(attempts, 0);
+    expect(find.byType(DemoWorkspace), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   late ReviewIdentity identity;
   late ReviewApi api;
   late ConnectedSession session;
