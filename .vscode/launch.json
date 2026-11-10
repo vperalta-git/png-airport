@@ -1,0 +1,104 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "📱 Client Flutter (Mobile - Auto Detect / Device)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/client_flutter"
+    },
+    {
+      "name": "🌐 Client Flutter (Chrome - Mobile View)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/client_flutter",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "🚗 Driver Flutter (Mobile - Auto Detect / Device)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/driver_flutter"
+    },
+    {
+      "name": "🌐 Driver Flutter (Chrome - Mobile View)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/driver_flutter",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "🛰️ Control Room Flutter (Chrome / Desktop)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/control_room_flutter",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "📱 Control Room Flutter (Mobile / Tablet)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/control_room_flutter"
+    },
+    {
+      "name": "1. Passenger Booking Web",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/passenger_web",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "2. Control Room Web",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/control_room_web",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "3. Administration Web",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/admin_web",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "4. Partner Operator Portal",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/operator_web",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "5. Driver Mobile App",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/driver_mobile"
+    },
+    {
+      "name": "6. Security Personnel Mobile",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/security_mobile"
+    },
+    {
+      "name": "7. Corporate Client Portal",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "apps/corporate_web",
+      "args": ["-d", "chrome"]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+name: png_transfer_driver
+description: "PNG Secure Airport Transfer Driver & Escort Mobile Application"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  png_transfer_flutter_core:
+    path: ../../packages/png_transfer_flutter_core
+
+  flutter_bloc: ^9.0.0
+  bloc: ^9.0.0
+  equatable: ^2.0.5
+  intl: ^0.19.0
+  uuid: ^4.3.3
+  cupertino_icons: ^1.0.8
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

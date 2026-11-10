@@ -1,0 +1,64 @@
+# Dependency directories
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+*.tsbuildinfo
+coverage/
+.emulator-data/
+.local-tools/
+*-debug.log*
+
+node_modules/
+*/node_modules/
+*/*/node_modules/
+
+# Expo
+.expo/
+*/.expo/
+*/*/.expo/
+dist/
+web-build/
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+serviceAccountKey.json
+*serviceAccount*.json
+firebase-credentials.json
+
+# Metro
+.metro-health-check*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scratch and test files
+scratch/
+
+# Flutter & Dart
+**/.dart_tool/
+**/build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.firebase/
+firebase-debug.log
+*-debug.log
+
+# Packaged Android demo APKs
+/Android APKs/

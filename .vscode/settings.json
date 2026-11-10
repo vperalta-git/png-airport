@@ -1,0 +1,5 @@
+{
+  "editor.formatOnSave": true,
+  "dart.flutterSdkPath": "C:\\flutter\\flutter",
+  "java.configuration.updateBuildConfiguration": "interactive"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1",
+  "id": "QUO-test-only",
+  "organizationId": "test-org",
+  "branchId": "test-lae",
+  "airportId": "airport_nadzab_lae",
+  "customerId": "test-customer",
+  "input": {
+    "airportId": "airport_nadzab_lae",
+    "direction": "INBOUND_AIRPORT_TO_CITY",
+    "vehicleCategory": "STANDARD_SEDAN",
+    "securityEscortType": "NONE",
+    "pickupDateTime": "2030-01-15T10:00:00+10:00",
+    "destinationAddress": "TEST ONLY destination",
+    "passengerCount": 1,
+    "luggageCount": 1
+  },
+  "pricing": {
+    "currency": "PGK",
+    "subtotalMinor": 12345,
+    "taxMinor": 0,
+    "totalMinor": 12345
+  },
+  "rateVersion": "TEST-ONLY-NOT-AN-APPROVED-TARIFF",
+  "createdAt": "2030-01-14T00:00:00Z",
+  "expiresAt": "2030-01-14T00:15:00Z"
+}

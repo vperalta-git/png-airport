@@ -1,0 +1,26 @@
+{
+  "project_info": {
+    "project_number": "000000000000",
+    "project_id": "demo-aerotrans-png2",
+    "storage_bucket": "demo-aerotrans-png2.appspot.com",
+    "firebase_url": "https://demo-aerotrans-png2-default-rtdb.firebaseio.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "android_client_info": {
+          "package_name": "com.pngtransfer.png_transfer_client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "local-emulator-key"
+        }
+      ],
+      "services": {}
+    }
+  ],
+  "configuration_version": "1"
+}

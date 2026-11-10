@@ -1,0 +1,15 @@
+{
+  "extends": "./backend/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["node", "jest"],
+    "typeRoots": ["./backend/node_modules/@types"],
+    "noEmit": true
+  },
+  "include": [
+    "backend/src/**/*.ts",
+    "backend/test/**/*.ts",
+    "packages/*/src/**/*.ts"
+  ],
+  "exclude": ["**/node_modules/**", "**/dist/**", "**/build/**"]
+}

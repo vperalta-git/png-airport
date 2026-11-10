@@ -1,0 +1,130 @@
+name: PNG Secure Transfer CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PROJECT_ID: png-airport-transfer-prod
+  REGION: asia-southeast1
+  SERVICE_NAME: png-transfer-backend
+  GAR_REPO: png-transfer-docker
+
+jobs:
+  # Stage 1: Quality, Linting & Tests
+  quality_and_tests:
+    name: Lint, Static Analysis & Automated Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Setup Flutter & Dart
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter Package Tests
+        run: |
+          cd packages/png_transfer_flutter_core
+          flutter pub get
+          flutter test
+
+      # Setup Node.js & NestJS Backend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package*.json
+
+      - name: Backend Unit & Integration Tests
+        run: |
+          cd backend
+          npm ci
+          npm run test
+
+  # Stage 2: Build & Push Backend Container to Google Artifact Registry
+  build_and_deploy_backend:
+    name: Build & Deploy Cloud Run Backend
+    needs: quality_and_tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'png-backend-cloudrun-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push Docker Container
+        run: |
+          IMAGE_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          LATEST_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:latest"
+          cd backend
+          docker build -t $IMAGE_TAG -t $LATEST_TAG .
+          docker push $IMAGE_TAG
+          docker push $LATEST_TAG
+
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}'
+
+      - name: Post-Deployment Smoke Test
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format 'value(status.url)')
+          curl -f "$SERVICE_URL/api/v1/health" || exit 1
+
+  # Stage 3: Build & Deploy Flutter Web Apps to Firebase Hosting Multi-site
+  deploy_firebase_hosting:
+    name: Deploy Flutter Web to Firebase Hosting
+    needs: quality_and_tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Build Passenger Web (Flutter Web)
+        run: |
+          cd apps/passenger_web
+          flutter pub get
+          flutter build web --release
+
+      - name: Build Control Room Web (Flutter Web)
+        run: |
+          cd apps/control_room_web
+          flutter pub get
+          flutter build web --release
+
+      - name: Deploy to Firebase Hosting & Rules
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: '${{ env.PROJECT_ID }}'
+          channelId: live
+

@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Evidence access awaits Batch B scope/ownership and upload policy.
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

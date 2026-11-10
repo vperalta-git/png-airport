@@ -1,0 +1,31 @@
+{
+  "name": "aerotrans-png2-local-tools",
+  "private": true,
+  "engines": {
+    "node": ">=20 <25"
+  },
+  "scripts": {
+    "demo:connected:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-connected.ps1",
+    "demo:connected:phone": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-connected.ps1 -Install",
+    "demo:all-roles:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-all-roles.ps1",
+    "demo:all-roles:phone": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-all-roles.ps1 -Install",
+    "demo:offline:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-offline.ps1",
+    "demo:save": "node scripts/local.mjs save-demo",
+    "demo:backend": "node scripts/local.mjs demo-backend",
+    "demo:test": "npm --prefix backend run build:contracts && node scripts/demo-test.mjs",
+    "demo:setup": "node scripts/demo-setup.mjs",
+    "demo:phone": "node scripts/demo-phone.mjs",
+    "demo:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-demo.ps1",
+    "emulators": "node scripts/local.mjs emulators",
+    "backend": "node scripts/local.mjs backend",
+    "flutter": "node scripts/local.mjs flutter",
+    "verify:emulators": "node scripts/local.mjs verify",
+    "test:emulators": "node scripts/local.mjs test",
+    "test:isolation": "node --test scripts/local.test.mjs",
+    "check:apps": "node scripts/compare-apps.mjs",
+    "typecheck": "npm --prefix backend run build:contracts && node backend/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "firebase-tools": "13.35.1"
+  }
+}

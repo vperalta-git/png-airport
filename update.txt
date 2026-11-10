@@ -1,0 +1,1224 @@
+AEROTRANS PNG2 - CURRENT CONNECTED APP, WEBSITE AND SOURCE HANDOFF
+Updated: 10 November 2026
+
+TARGET SOURCE REPOSITORY: https://github.com/vperalta-git/png-airport
+PRIMARY LOCAL WORKSPACE: C:\Users\Vionne\Documents\PNG Airport Transfer\png2
+PNG2 remains NestJS/Firebase/Flutter. Do not introduce the older React/SQLite app.
+
+CURRENT CONNECTED DELIVERABLE:
+Android APKs\aerotrans-all-roles-connected.apk (AeroTrans Connected)
+One app, four authenticated workspaces. Role selection never grants permissions;
+Firebase identity and the backend profile govern Customer, Control Room, Driver
+and Manager/Supervisor access. The shared UI has been refined. The website version
+also compiles from apps/passenger_web/lib/main_connected.dart.
+
+CONNECTED PHONE STATUS: APK built and package checks passed. Device installation
+and native acceptance are still pending because no phone is currently detected.
+The offline app's earlier phone checks do not establish connected-app acceptance.
+
+Run npm run demo:connected:phone -- -DeviceSerial <serial> after local services
+are running and the phone is connected/unlocked. Current backend is local-only;
+sending the connected APK alone does not provide remote supervisor access.
+Hosted nonproduction services/configuration are still required for remote review.
+
+OFFLINE DELIVERABLE RETAINED:
+Android APKs\aerotrans-all-roles-offline.apk (AeroTrans Demo)
+One local saved practice store, all four roles, no backend. This remains separate.
+
+SOURCE PUSH AUTHORIZATION: User explicitly authorized pushing current PNG2 source
+to the new repository on 10 November. Earlier no-push restrictions are superseded
+ONLY for this destination/source publication. No deployment/production access is
+authorized. APKs, local credentials and emulator data remain ignored and excluded.
+Publish a clean current-source snapshot; preserve the original history locally
+because legacy history includes hardcoded account/contact records of unknown origin.
+
+The current connected report, guide and publication notes follow. Prior handoffs
+are preserved at the end and are historical where superseded by this status.
+
+# AeroTrans PNG2 - unified connected review app
+
+Implementation: 9 November 2026. Source handoff: 10 November 2026.
+Primary workspace: PNG Airport Transfer/png2.
+
+## Completed
+
+One Flutter entrypoint, apps/passenger_web/lib/main_connected.dart, supports all
+four workspaces against the existing NestJS/Firebase backend. Customer registration
+and login use the existing Auth/API flow. Role cards are sign-in entry choices;
+the active backend profile determines permissions and the workspace rendered.
+No offline adapter, demo persona login, embedded passwords or replacement server
+is used in this build.
+
+The session controller verifies UID, active status, supported role and canonical
+organization/branch/airport scope. It rejects stale profile responses after an
+account change, guards duplicate actions, supports profile retry after network
+failure and destroys the previous account's navigation routes. Account switching
+signs out before another login. An unavailable logout endpoint is distinguished
+from confirmed server revocation; local sign-out remains possible.
+
+The shared UI now uses bundled typography, navy/gold controls, responsive content
+widths, dashboard summaries, stronger reservation/status hierarchy, password
+visibility, better empty/error/loading states and account navigation. Existing
+booking, dispatch, pickup OTP, trip, management and payment-state flows remain
+API-backed. PGK integer minor units and PNG UTC+10 displays remain in place.
+
+## Android export and isolation
+
+Artifact: Android APKs/aerotrans-all-roles-connected.apk.
+Launcher: AeroTrans Connected.
+Package: com.pngtransfer.png_transfer_client.connected.
+Version: 1.1.0, code 3; Android API 24+, ARM32/ARM64.
+Size: 40,286,787 bytes.
+SHA-256: bae3e3f790de9ca07ad3722879b8cc3f8deca6ca11b2961ba2ed094c497a26ca.
+Source fingerprint: 9210ba97699095815ed5aedf855da878079fa11ae839a1887d9f87645d66e392.
+
+The compiled/exported APK passed signature, identity, native plugin registration,
+Firebase Auth/storage class and restricted network-policy checks. Firebase options
+are explicit and emulator-only; FirebaseInitProvider is absent. The Google Services
+plugin is not applied to this mode, preventing stale generated configuration from
+another build from entering the APK. The build rejects cached Firebase resource
+values and resolves optimized Android XML resource names before policy inspection.
+HTTP is allowed only for the known loopback development hosts. AppConfig continues
+to reject external API origins; there is no silent production fallback.
+
+The separate offline APK and its saved data/package were retained. Exported APKs,
+credentials and generated output are ignored by Git and are not source artifacts.
+
+## Verification actually performed
+
+- Shared Flutter suite: 45 passed, 5 offline-flag-only UI tests skipped normally.
+- Separate offline UI preservation suite: 5 passed after the shared UI changes.
+- Connected session/widget tests: 12 passed, included in the 45 above. Coverage
+  includes role hints versus real authorization, UID/scope/active validation,
+  denied access, network retry, stale sessions, duplicate actions, navigation
+  cleanup, login field preservation and startup recovery.
+- Focused Flutter analysis: no issues in the changed/new implementation and tests.
+- Backend verification: 8 suites / 22 tests passed. The comprehensive real-emulator
+  four-role integration passed authentication, authorization/ownership, authoritative
+  quotes, idempotency, assignment/reassignment/conflicts, acceptance, OTP lock/
+  reissue/replay, trip completion/cancellation, payment separation and management.
+  Other suites cover guards/contracts/isolation and mocked HTTP foundation cases.
+- Android connected release compilation and export checks passed.
+- Unified connected Flutter website compilation passed (49.1 seconds):
+  flutter build web --no-pub --target lib/main_connected.dart
+  --dart-define=AEROTRANS_CONNECTED_REVIEW=true --no-web-resources-cdn.
+  This is compilation, not browser/backend acceptance or deployment.
+- Native connected-app login/workflow acceptance has not yet been performed.
+  On 10 November the phone was no longer detected and local services were stopped.
+  The APK is built; installation and actual phone acceptance remain pending a
+  connected/unlocked device. The earlier offline APK's phone checks do not count
+  as connected-app acceptance.
+
+The tests used isolated local fixtures and cleaned their own records. No production
+access, deployment, public tunnel, live provider call or actual payment occurred.
+
+## Modified/added source
+
+- packages/png_transfer_flutter_core/lib/connected/connected_session.dart
+- packages/png_transfer_flutter_core/lib/connected/connected_review_app.dart
+- packages/png_transfer_flutter_core/lib/theme/aviation_theme.dart
+- packages/png_transfer_flutter_core/lib/screens/mobile_demo_app.dart
+- packages/png_transfer_flutter_core/lib/screens/mobile_demo_booking.dart
+- packages/png_transfer_flutter_core/lib/screens/mobile_demo_management.dart
+- packages/png_transfer_flutter_core/test/connected_session_test.dart
+- packages/png_transfer_flutter_core/test/connected_review_app_test.dart
+- packages/png_transfer_flutter_core/test/support/connected_review_fakes.dart
+- apps/passenger_web/lib/main_connected.dart
+- apps/passenger_web/android/app/build.gradle.kts
+- apps/passenger_web/android/app/src/connected/AndroidManifest.xml
+- apps/passenger_web/android/app/src/connected/res/xml/connected_network_security_config.xml
+- scripts/build-android-connected.ps1, scripts/test-connected-phone.ps1
+- package.json, README.md, docs/connected-review.md, update.txt and this report.
+
+## Run and next steps
+
+Use docs/connected-review.md. Start the existing local emulators/backend only if
+they are stopped. Run npm run demo:setup for owned local accounts/fleet when needed;
+generated passwords stay in ignored .local-tools/demo/accounts.json.
+
+    npm run demo:connected:phone -- -DeviceSerial <serial>
+
+This rebuilds, checks readiness, forwards local ports, installs with -r and launches
+the one connected application. It preserves app data. The native smoke helper is
+available for supervised testing; it has not been counted as a passed device run.
+
+Next, install on a connected phone, verify all four real logins and run the booking
+walkthrough. A remotely shared APK requires a hosted nonproduction backend and
+matching Firebase test configuration; those services/credentials are not supplied.
+Commercial tariffs/tax and payment/notification/tracking integrations remain
+business/provider work, separate from this local review runtime.
+
+## Source publication
+
+The user authorized a source push on 10 November 2026 to
+https://github.com/vperalta-git/png-airport. This does not authorize deployment or
+uploading local credentials, emulator snapshots or APKs. The empty destination is
+receiving a clean current-source snapshot, preserving the original local history
+without publishing legacy hardcoded account/contact records. See
+SOURCE_PUBLICATION.md. Final commit/remote verification is reported separately;
+do not infer a hosted site from the GitHub repository alone.
+
+
+================ CONNECTED REVIEW GUIDE ================
+
+# AeroTrans Connected: one APK, four authenticated workspaces
+
+Install **Android APKs/aerotrans-all-roles-connected.apk** and open
+**AeroTrans Connected**. This is a separate app from **AeroTrans Demo**, the
+standalone offline practice APK. Both can remain installed.
+
+Customer, Control Room, Driver and Manager/Supervisor use the existing NestJS API,
+Firebase Authentication and shared Firestore booking records. There is no local
+practice adapter or fake role login in this connected build. Choosing a workspace
+opens sign-in; the backend profile determines the account's actual permissions.
+
+## Current connection requirement
+
+This build connects to the existing isolated **local** backend via USB forwarding.
+Keep the review computer running, the services running, and the phone connected.
+The Firebase project is demo-aerotrans-png2. It never falls back to production.
+
+**Sending this APK alone does not provide remote access to the backend.** A hosted
+nonproduction backend and matching test Firebase configuration are still required
+before the supervisor can use the connected version remotely. No hosting,
+deployment, public tunnel or production access has been configured. The offline
+APK remains available for standalone remote screen/workflow demonstrations.
+
+## Start or reconnect
+
+From PNG2, check existing services first to avoid duplicate processes:
+
+    npm run verify:emulators
+
+The local backend health URL is http://127.0.0.1:8080/api/v1/health.
+If stopped, start these in separate terminals and leave them running:
+
+    npm run emulators
+    npm run demo:backend
+
+The second command explicitly uses established test-only PGK rates, not approved
+commercial tariffs. For a new local environment, prepare managed test accounts:
+
+    npm run demo:setup
+
+Build, validate, forward local ports, install/update, and launch on the phone:
+
+    npm run demo:connected:phone -- -DeviceSerial d381fffa0421
+
+Use the actual serial from adb devices for another phone. Keep it unlocked and
+approve any USB debugging / installation prompt. Updating uses adb install -r;
+existing application data is preserved. Android 7/API 24 or newer, ARM32/64.
+
+To build/export without installing:
+
+    npm run demo:connected:android
+
+USB reverse ports are backend8080, Auth9099, Firestore8085, Realtime Database9000
+and Storage9199. Reapply forwarding after reconnecting USB:
+
+    npm run demo:phone -- --serial d381fffa0421
+
+## Accounts and switching
+
+The account chooser supports all four workspaces. Use the matching local test
+account and its generated password from **.local-tools/demo/accounts.json** on
+this computer. Staff accounts cannot be created through customer registration.
+Keep generated passwords out of commits, reports, screenshots and APK assets;
+provide any authorized reviewer credentials separately through an appropriate
+private channel. No real credentials or hardcoded test passwords are embedded.
+
+Once signed in, **Switch account** or **Sign out** closes the current workspace
+and returns to account selection. The next account must authenticate. Previous
+booking pages are discarded so another user cannot inherit them. Selecting the
+Supervisor card does not grant supervisor permissions to a customer account.
+
+The current signed-in identity can restore after reopening, provided the backend
+and Firebase services are available. If account verification fails, Retry and
+Sign out are offered; an unverified profile never opens an operational workspace.
+
+## Review the flow
+
+1. Customer: sign in/register, choose Lae/Nadzab, enter a future PNG pickup time
+   and made-up passenger/address details. Request a server quote and book.
+2. Switch account to Control Room. Refresh/open that same backend reservation,
+   assign an eligible available driver and matching vehicle.
+3. Switch to the assigned Driver. Accept with inspection, depart and arrive at
+   pickup. The driver can see only assigned work.
+4. Switch to the owning Customer and read the booking's pickup code.
+5. Switch back to the Driver, verify the code through the API, progress the trip
+   and complete it. Completion does not confirm a payment.
+6. Switch to Supervisor to review summaries, audit, staff and vehicles.
+
+There are no automatically inserted operational bookings. Lists and summaries
+show actual backend records; empty lists are valid. Existing local data is kept.
+The explicit setup only provisions its owned demo staff and fleet fixtures.
+
+The UI uses bundled typography, navy/gold controls, responsive forms/dashboards,
+separate trip/payment status, real loading/empty/error states and manual refresh
+plus background polling. Last successful refresh is shown in PNG time. A failed
+refresh preserves prior data with a visible error; it does not report a new result.
+
+## Boundaries
+
+This is an internally signed development review build, not a store release.
+PGK amounts use integer minor units; Lae/Nadzab times display in PNG UTC+10.
+Established test fares remain PGK100 sedan / PGK150 SUV. They are not commercial
+rates; a zero test tax component is not a tax policy. Without explicit test rates
+or approved configuration, pricing must remain unconfigured.
+
+No real merchant/payment, GPS movement, SMS, WhatsApp, flight feed or notification
+provider is simulated as successful. Payment remains separate from trip status.
+Do not enter real operational or personal data into this review environment.
+
+For subsequent changes, rebuild/install with the same phone command. The build
+validates native Firebase/Auth/storage registration and the exact connected APK
+identity before exporting. The connected native configuration permits HTTP only
+to loopback aliases; AppConfig still rejects external API origins. The offline
+APK's package, data and lack of network permissions are preserved.
+
+
+================ SOURCE PUBLICATION NOTES ================
+
+# PNG2 source publication
+
+Requested destination: https://github.com/vperalta-git/png-airport.
+Prepared: 10 November 2026.
+
+This publication contains the current PNG2 source: Flutter web/mobile apps, shared
+packages/contracts, NestJS backend, configuration examples, tests and handoff docs.
+The unified connected website compiles successfully from
+apps/passenger_web/lib/main_connected.dart.
+
+The destination was empty. A clean current-source snapshot is used instead of
+transferring the original repository's legacy history. That older history contains
+hardcoded registered-account/contact records that could not be verified as test
+data. The original working copy, branch, index, origin and history are preserved
+locally; no history rewrite or force push is needed.
+
+The publication checkout is kept locally under ignored
+.local-tools/publication/. It has its own Git history and the new repository as
+origin. Future updates from the original workspace must continue using reviewed
+current-source snapshots; do not merge or push the legacy parent history into
+the new repository. A fresh clone of the new repository can be developed and
+pushed normally.
+
+Private environment files, generated local accounts/passwords, emulator snapshots,
+APKs, SDK/build output and dependency directories are excluded. The current source
+scan found no actual private keys, provider tokens or operational credential
+records. The clearly labeled offline practice password is public demo fixture data.
+
+Verification for this source state:
+
+- Unified connected Flutter website: compilation passed.
+- Shared Flutter regression suite: 45 passed; 5 offline-only tests skipped normally.
+- Separate offline UI preservation checks: 5 passed.
+- Backend verification: 8 suites / 22 tests passed, including a real-emulator
+  four-role workflow.
+- Connected Android APK: compiled and exported with package/security checks.
+  Connected-phone installation and native acceptance are still pending; no phone
+  was detected on 10 November.
+
+This is a source push, not a website/backend deployment. The connected runtime
+currently requires local services. Remote supervisor reviews still need hosted
+nonproduction services and matching Firebase configuration. No deployment or
+production data change is included.
+
+
+================ HISTORICAL HANDOFFS ================
+
+AEROTRANS PNG2 - LATEST HANDOFF: SINGLE OFFLINE APK, ALL FOUR ROLES
+Updated: 9 November 2026
+
+PRIMARY WORKSPACE: C:\Users\Vionne\Documents\PNG Airport Transfer\png2
+
+CURRENT DELIVERABLE: Android APKs\aerotrans-all-roles-offline.apk
+LAUNCHER: AeroTrans Demo
+It is installed on the connected M2010J19SG Android 12 phone. All four roles share
+one local saved practice store. The old online/backend architecture is preserved.
+Use the combined APK; the older four-APK offline ZIP is superseded and had a
+confirmed native plugin registration bug. Do not send that older bundle to testers.
+
+The stuck reset screen was repaired by successful native plugin generation and
+actual-APK registration verification. Startup now has bounded, actionable recovery.
+Physical dashboards, confirmed reset and Control Room persistence after a forced
+restart were verified. Customer was left open. Full phone booking/OTP/completion
+and airplane-mode acceptance are not yet completed; do not claim they passed.
+
+FAST DEVELOPMENT LOOP:
+npm run demo:all-roles:phone -- -DeviceSerial d381fffa0421
+This rebuilds, updates the same combined app without clearing its data, and opens
+it. Keep the phone unlocked and accept any Android installation prompt.
+
+PNG2 remains NestJS/Firebase/Flutter. No React/SQLite replacement, hosting,
+production access, deployments, pushes or live provider transactions were added.
+Offline accounts, tariffs, OTPs and role selection are explicit simulations;
+payments stay pending. Different phones do not share practice records.
+
+The current implementation report and tester guide follow. Older handoffs at the
+end are historical; the single combined APK and its report take precedence.
+
+================ CURRENT COMBINED APK REPORT ================
+
+# AeroTrans PNG2 - combined offline demo and Android startup repair
+
+Date: 9 November 2026. Workspace: PNG Airport Transfer/png2.
+
+## Result and scope
+
+The standalone delivery is now one APK, **aerotrans-all-roles-offline.apk**, with
+launcher **AeroTrans Demo**. Customer, Control Room, Driver and Manager/Supervisor
+share one saved local practice store. The second seeded driver remains available
+in the dashboard account chooser. The original online NestJS/Firebase/Flutter
+implementation and exported online APKs are retained.
+
+The combined application ID is
+`com.pngtransfer.png_transfer_client.offline.allroles`; version code 2, version
+name 1.0.1-offline-all-roles. The older separate applications can coexist and are
+not automatically uninstalled or cleared. Use the combined APK for current demos;
+the original four-APK offline export/ZIP is superseded.
+
+## Confirmed startup/reset bug
+
+The original Android APKs contained SharedPreferencesPlugin but did not contain
+Flutter's GeneratedPluginRegistrant. Native storage calls therefore had no
+registered Android channel. The bootstrap swallowed the opening error and offered
+a reset whose own storage call was unhandled. Launching the native activity with
+Status: ok did not establish that Flutter had opened practice data successfully.
+
+On this Windows machine, Flutter's desktop symlink failure interrupted pub get
+before generation of Android plugin registration. Subsequent --no-pub builds
+compiled and packaged the plugin classes without registering them.
+
+The new Android preparation helper runs flutter pub get --offline successfully
+with desktop feature switches disabled only in the current process, restores the
+environment afterward, and requires generated native storage registration. It
+does not change global Flutter configuration or remove platform folders. Both
+existing four-app Android build scripts use this helper too.
+
+The combined build additionally inspects actual APK dex for the registrant and
+storage plugin. It verifies package identity, version, ARM32/ARM64, signature,
+absence of INTERNET/ACCESS_NETWORK_STATE permissions and FirebaseInitProvider
+before export. No backend, Firebase project or internet connection is needed at
+runtime, and the normal connected entrypoints retain their behavior.
+
+## UI and recovery changes
+
+- A compact four-role starting screen and the existing dashboard persona switcher
+  provide one complete shared booking scenario in a single installation.
+- A stateful bootstrap owns the store and displays bounded storage initialization,
+  retry and reset errors. It no longer restarts runApp recursively.
+- Missing native channels explicitly require a corrected APK; a reset is not
+  offered as a cure for missing registration.
+- Recoverable data/reset failures remain visible and can be retried. Duplicate
+  startup/retry and reset-confirmation actions are guarded.
+- Storage clear removes only this offline installation's practice snapshot key.
+  Confirmed dashboard reset restores the sample scenario and role chooser.
+
+## Files changed or added for this fix
+
+- packages/png_transfer_flutter_core/lib/offline/offline_demo_app.dart
+- packages/png_transfer_flutter_core/lib/offline/offline_demo_persistence.dart
+- packages/png_transfer_flutter_core/lib/offline/offline_demo_store.dart
+- packages/png_transfer_flutter_core/test/offline_demo_app_test.dart
+- apps/passenger_web/lib/main_offline_all_roles.dart
+- apps/passenger_web/android/app/build.gradle.kts
+- apps/passenger_web/android/app/src/offlineAllRoles/AndroidManifest.xml
+- scripts/prepare-android.ps1
+- scripts/build-android-all-roles.ps1
+- scripts/build-android-offline.ps1
+- scripts/build-android-demo.ps1
+- scripts/test-all-roles-phone.ps1
+- package.json, README.md, docs/offline-demo.md,
+  docs/all-roles-offline-demo.md, update.txt and this report.
+
+Flutter generates ignored native registration and plugin metadata as part of
+preparation. No handwritten plugin list is maintained. A checkpoint of prior
+local work is under ignored .local-tools/checkpoints/before-combined-*.
+Flutter also refreshed passenger_web/macos/Flutter/GeneratedPluginRegistrant.swift
+to include the existing shared preferences dependency.
+
+## Verification
+
+- Focused combined-role/recovery/store/client tests: 12 passed.
+- Shared ordinary-build regression tests: 33 passed, 5 offline-only UI tests
+  intentionally skipped without the offline compile flag.
+- Focused Flutter analysis: no issues found.
+- Combined release compilation and exported APK identity, signature, native
+  registration and network-isolation checks passed.
+- New recovery tests exercise corrupt storage, failed reset then successful
+  recovery, missing native channels, all four entry choices, account switching
+  and persisted state.
+
+- The corrected combined APK was installed successfully on the connected
+  M2010J19SG (Android 12 / API 31, ARM64). The initial phone approval restriction
+  was resolved by the user before retrying. Automatic sandbox approval did not
+  reject the action.
+- Actual Flutter dashboards for Customer, Control Room, Driver and Supervisor
+  were observed on the phone; verification went beyond native activity start.
+- UI-confirmed practice reset returned to the chooser with all four buttons.
+- A targeted native check selected Control Room, force-stopped the app, reopened
+  it, confirmed the same Control Room persona was restored from Android storage,
+  and switched back to Customer successfully. Customer was left open.
+- Device XML/screenshots are under .local-tools/offline/combined/device. The
+  targeted passing snapshots include control-room-confirmed.xml,
+  control-room-restored.xml and final-customer-confirmed.xml.
+- The broader unattended phone-smoke script did not finish successfully while
+  the foreground screen was changing during checks. Its failure result is
+  retained; it is not counted as a passed acceptance run. The targeted checks
+  above were subsequently completed separately.
+- Full physical-device booking/OTP/completion, airplane-mode and provider
+  acceptance were not performed. The automated store/client tests cover the
+  four-role workflow without an HTTP client. Native packaging has no internet
+  permission, but that does not substitute for broader device acceptance.
+
+Final APK: 39,272,487 bytes. Source fingerprint:
+2785094566a7fbc9597631e26f519e56a1f1d13775a3737c3bb3862d1158e893.
+The sidecar manifest records the APK SHA-256. All four earlier online export
+checksums were rechecked and remain unchanged.
+
+## Rebuild and update a connected phone
+
+    npm run demo:all-roles:android
+    npm run demo:all-roles:phone -- -DeviceSerial d381fffa0421
+
+The second command builds, installs with adb install -r, and starts the explicit
+owner-user activity. It preserves app data for subsequent updates and stops on
+dependency, packaging, authorization or installation failures. Choose a different
+serial from adb devices when needed. Native activity start alone is reported as
+a launcher check, not full workflow acceptance.
+
+See docs/all-roles-offline-demo.md for the tester walkthrough. Practice data
+remains local to each phone. Authentication/roles/OTP are simulations; test fares
+are unapproved, payments stay pending, and no real GPS, notification, payment
+provider or offline-to-online synchronization is claimed. PNG PGK and UTC+10
+remain in place. No push, deployment or live data/provider access was performed.
+
+Next: run the full tester walkthrough on a phone, collect flow/usability feedback,
+and use the direct USB update command for subsequent fixes. Approved commercial
+rates, real authentication/security and multi-phone/provider testing belong to
+the retained connected implementation, not this local practice harness.
+
+
+================ CURRENT TESTER GUIDE ================
+
+# AeroTrans: one offline APK, all four roles
+
+Install **aerotrans-all-roles-offline.apk** and open **AeroTrans Demo**.
+Choose Customer, Control Room, Driver or Manager / Supervisor. All roles use the
+same saved practice records inside this one app. No internet, USB connection,
+Firebase project or backend is needed after installation.
+
+Android 7/API 24 or newer is required. ARM32 and ARM64 are included. This is an
+internal sideloaded demonstration build, not a store or production release.
+
+## Switch accounts
+
+On a role dashboard, tap the navy role button at the top. Choose another account
+to continue the same booking. Return from booking details to the dashboard with
+Back before switching. The second demo driver is also in this account chooser.
+Sign out to return to the four-role starting screen.
+
+Each phone keeps its own local practice data. Different phones and the older
+separate APKs do not synchronize or share these records.
+
+## Test one complete booking
+
+1. Choose Customer. Book an airport transfer with made-up details, a future PNG
+   pickup time and a demo quote. Note the OFFLINE-BK reference.
+2. Return to the dashboard and switch to Control Room. Open that same reference.
+   Assign a matching available driver and vehicle. For a new sedan trip, Demo
+   Driver Two and DEMO Sedan Two are initially free.
+3. Switch to Driver - Demo Driver Two. Open that booking, complete all four
+   pre-trip checks, accept, depart and arrive at pickup.
+4. Switch to Customer and read that booking's six-digit pickup code.
+5. Switch to the assigned driver, verify the code, start the trip, arrive at the
+   destination and complete the transfer.
+6. Switch to Supervisor to review activity, audit records, staff and vehicles.
+7. Close and reopen the app: the selected account and practice data should remain.
+
+There are two explicit starting practice bookings and three demo vehicles. The
+primary driver already has an assigned example trip. Use the second driver for
+a new booking, or complete/cancel the earlier trip first. Driver acceptance,
+inspection, pickup codes, trip stages and resource conflicts are checked locally.
+
+Payment remains Pending. The demo does not collect, confirm or verify money.
+It uses established test-only fares: PGK 100.00 sedan and PGK 150.00 SUV. These
+are not approved commercial tariffs; zero test tax is not a business tax policy.
+Lae / Nadzab pickup times display in PNG UTC+10.
+
+## Reset and practice sign-in
+
+The reset icon asks before clearing only this installation's practice data. It
+recreates fresh scenarios and returns to the role chooser. Online/backend data
+and older applications are unaffected. Pickup codes last 24 hours in practice
+mode; reset or use Supervisor reissue at pickup if a code expires.
+
+Optional local sign-in / customer registration is also available. Starting
+practice accounts all use **DemoOnly2026!**:
+
+- customer@offline.aerotrans.invalid
+- control@offline.aerotrans.invalid
+- driver@offline.aerotrans.invalid
+- driver2@offline.aerotrans.invalid
+- supervisor@offline.aerotrans.invalid
+
+Use only made-up personal details and passwords. Accounts and unrestricted demo
+role selection are simulations, not real authentication or server authorization.
+There are no real payments, GPS feeds, messages, provider notifications or data
+uploads. The existing NestJS/Firebase implementation is retained separately.
+
+## Development and direct phone updates
+
+From PNG2, build/export the APK:
+
+    npm run demo:all-roles:android
+
+Build, update the connected phone and launch the combined app:
+
+    npm run demo:all-roles:phone -- -DeviceSerial d381fffa0421
+
+Use the actual serial from adb devices when connecting another phone. Keep the
+phone unlocked and approve USB debugging/installation prompts if requested.
+Updating with adb install -r preserves this app's practice data. No app is
+automatically uninstalled. The older online and separate offline apps can coexist.
+
+The build prepares native Android plugins before compilation and checks that the
+actual APK contains the generated plugin registrant and storage plugin. It also
+checks identity, signature and absence of network permission/Firebase automatic
+initialization. A startup storage failure shows Retry and a recoverable reset
+error; a missing plugin explicitly requires a corrected APK instead of a reset loop.
+
+
+================ HISTORICAL HANDOFFS (SUPERSEDED WHERE DIFFERENT) ================
+
+LATEST DEVICE UPDATE - 9 NOVEMBER 2026
+
+## Phone installation follow-up - 9 November 2026
+
+All four offline APKs were subsequently installed successfully on the connected
+M2010J19SG phone (Android 12 / API 31, ARM64). Each APK checksum matched the export
+manifest. All four explicit native launcher checks returned Status: ok. Customer
+was brought to the foreground afterward. The phone's initial USB installation
+restriction was resolved by the user before the successful retry.
+
+This supersedes the earlier statement that no phone had been connected. Full
+physical-device workflow and airplane-mode acceptance remain unperformed; these
+results establish installation and native activity launch only.
+Earlier build-time handoff follows; the device installation note above supersedes its no-connected-phone statements.
+
+AEROTRANS PNG2 - CURRENT OFFLINE AND CONNECTED ANDROID HANDOFF FOR GPT
+Updated: 9 November 2026
+
+PRIMARY WORKSPACE: C:\Users\Vionne\Documents\PNG Airport Transfer\png2
+REFERENCE PROJECT ONLY: C:\Users\Vionne\Documents\PNG Airport Transfer
+
+PNG2 remains the architecture: NestJS, Firebase, Flutter and shared v1 contracts.
+Batch A and the connected four-role demo already exist. Do not rebuild them or
+introduce the older React/SQLite project. Inspect the actual modified source first.
+
+CURRENT DELIVERY: FOUR SEPARATE STANDALONE OFFLINE ANDROID DEMO APKS.
+The user explicitly approved local simulated workflows for offline testing, while
+retaining the online/backend version. These are separate builds and application IDs.
+The offline adapter never replaces the NestJS backend and never connects to Firebase.
+
+SEND THIS BUNDLE TO TESTERS:
+Android APKs\AeroTrans-Offline-Demo-APKs.zip
+Individual offline APKs and TESTER-README.txt: Android APKs\Offline\
+No computer, USB, internet, Firebase project or hosted backend is required to use
+the offline APKs. Android 7/API 24 or newer; ARM32 and ARM64 are included.
+
+IMPORTANT: Each installation stores independent practice data. There is no sync
+between APKs, phones or the backend. Each APK starts in its named role and includes
+all four role screens. Switch personas WITHIN ONE APK to test a single booking from
+Customer to Control Room to Driver to Supervisor. Practice payments remain pending.
+
+The four older *-demo.apk files retain their checksums and online/emulator behavior.
+They still require the connected local environment described in docs/android-demo.md.
+Both modes can coexist on a phone. Normal lib/main.dart entrypoints remain intact;
+new lib/main_offline.dart entrypoints require AEROTRANS_OFFLINE_DEMO=true.
+
+FIRST NEXT TASK: install the OFFLINE APKs on a real Android phone and run the included
+walkthrough in airplane mode. Builds, automated tests and browser acceptance passed;
+no actual phone was connected, so physical-device runtime acceptance is still pending.
+Collect tester feedback and apply approved fixes to the shared screens in both modes.
+
+Do not push, deploy, use production data or call live provider APIs. Offline practice
+accounts, OTPs, test fares and role switching are simulations. They do not establish
+real Firebase security, approved tariffs or provider integration. No real payment,
+notification or GPS result is fabricated. Use only made-up details in these demos.
+
+Below are the complete latest implementation report and tester instructions.
+The older connected handoff is preserved at the end for reference and is superseded
+where it says the only available APKs require USB or a local computer.
+
+================ LATEST OFFLINE IMPLEMENTATION REPORT ================
+
+
+# AeroTrans PNG2 — separate offline APK report
+
+Date: 9 November 2026. Primary workspace: PNG Airport Transfer/png2.
+The user explicitly requested standalone offline demos for remote testers while
+retaining the existing online/backend version.
+
+## Delivered modes
+
+- Existing online/emulator mode: unchanged lib/main.dart entrypoints, NestJS,
+  Firebase, canonical API client and .demo application IDs. The four original
+  exported online APKs retain their SHA-256 checksums.
+- New offline mode: separate lib/main_offline.dart entrypoints and .offline
+  application IDs. No Firebase initialization, API server or network connection.
+- Four offline APKs are in Android APKs/Offline. A ZIP with the APKs, manifest and
+  tester instructions is in Android APKs/AeroTrans-Offline-Demo-APKs.zip.
+- These are release-mode internal demo APKs signed with the existing development
+  signing configuration. They are not store/production releases.
+- All four offline packages have distinct Offline launcher labels, min SDK 24,
+  and include ARM32/ARM64 support. Android INTERNET and ACCESS_NETWORK_STATE
+  permissions and FirebaseInitProvider are absent.
+- Both modes can coexist on a phone. Each offline installation keeps independent
+  practice data; it does not synchronize with other APKs, phones or the backend.
+
+## Offline functionality
+
+Each APK begins with its named role and contains an accessible role switcher.
+This allows a tester to follow the SAME reservation across all four roles inside
+one installation, which is necessary without a shared server.
+
+The local practice adapter supports customer account creation/sign-in, PGK test
+quotes, bookings, idempotent reservation retry, driver/vehicle availability,
+assignment/reassignment, acceptance with inspection, pickup OTP, stage progression,
+completion/history, early cancellation, staff management, fleet changes, driver
+duty, summaries and audit activity. All mutations persist before being reported
+as saved. Failed writes leave the current in-memory state unchanged.
+
+Pickup codes are customer-visible, restricted by assigned driver in the practice
+adapter, single-use, expire and lock after five failed attempts. Supervisor reissue
+requires a reason. Trip stages cannot skip pickup verification. Resource conflicts,
+ownership, active driver/vehicle eligibility and stale revisions are checked.
+Reassignment clears prior acceptance and removes the former driver's access.
+New practice drivers begin off duty; the seeded ready-to-test drivers are on duty.
+
+Payments stay PENDING throughout. There is no real merchant, GPS, flight,
+notification, messaging, security dispatch or evidence upload integration.
+Practice authentication and the unrestricted demo persona chooser are simulations,
+not validation of Firebase authentication or production security.
+
+Five named personas, three demo vehicles and two explicit practice reservations
+are created on first use. One reservation awaits dispatch; one is ready for the
+primary driver. Reset affects only this offline installation and recreates fresh
+practice dates/codes. Practice data is saved between restarts.
+
+## Preserved architecture and isolation
+
+The existing NestJS/Firebase backend was not replaced or modified for this mode.
+The new OfflineDemoClient is an in-process fixture adapter for the existing shared
+Flutter screens; it is not an HTTP server or a competing operational backend.
+It overrides active get/post/patch methods and never falls back to HTTP.
+
+The offline build flag is explicit and defaults to false. Android packaging reads
+that same flag from Flutter's Dart build definitions. The offline manifest is used
+only for the separate release-mode build. The build script rejects an APK with
+the wrong identity, network permission, Firebase auto-initializer or invalid signature.
+
+No source rebuild was copied over the retained online APK delivery files. A new
+online Customer debug build was also compiled and checked: it still has the .demo
+identity and normal network access. The normal backend command and normal main
+entrypoints remain available for continued connected development.
+
+A pre-change checkpoint of existing online work is in the ignored
+.local-tools/checkpoints/before-offline-20261109 folder (patch, untracked files,
+manifest). No push, deployment or production data change was performed.
+
+## Modified / added files
+
+Shared Flutter:
+
+- lib/config/demo_mode.dart (new explicit offline build flag).
+- lib/offline/offline_demo_store.dart (new practice state, adapters and local flows).
+- lib/offline/offline_demo_persistence.dart (new local JSON snapshot persistence).
+- lib/offline/offline_demo_app.dart (new offline bootstrap, quick entry, role switcher,
+  practice sign-in/registration, local reset and guide).
+- lib/offline_demo.dart (separate public offline entrypoint).
+- lib/screens/mobile_demo_app.dart, mobile_demo_booking.dart,
+  mobile_demo_management.dart (offline labels only when the flag is enabled).
+- pubspec.yaml, pubspec.lock, bundled Roboto font and its license.
+- test/offline_demo_store_test.dart, offline_demo_client_test.dart,
+  offline_demo_app_test.dart.
+
+All four maintained apps (passenger_web, control_room_web, driver_mobile, admin_web):
+
+- lib/main_offline.dart.
+- android/app/src/offline/AndroidManifest.xml.
+- android/app/build.gradle.kts: conditional offline identity/manifest/packaging;
+  ordinary online settings retained.
+- pubspec.lock: shared storage plugin resolution.
+
+Tooling / documentation:
+
+- scripts/build-android-offline.ps1 and scripts/browser-offline.mjs.
+- package.json: npm run demo:offline:android.
+- README.md, docs/android-demo.md, docs/offline-demo.md, update.txt and this report.
+- .gitignore keeps the Android APKs delivery folder out of source control.
+
+shared_preferences 2.5.5 supplies local demo persistence. crypto was made an
+explicit dependency for local practice credential digests; its implementation is
+a mock-login aid, not an operational password service. Roboto is bundled to keep
+offline typography self-contained. No hosted service or new backend was added.
+
+## Verification performed
+
+- Shared Flutter regression suite: 33 tests passed; 2 offline-build-only UI tests
+  skipped in the ordinary build configuration.
+- Offline-flag UI suite: 2 tests passed, covering startup, all four role defaults,
+  accessible switching, guide, reset and a 390px phone layout.
+- Offline store/client tests are included above: full workflow, persistent state,
+  required acceptance, attempted state skipping, driver-only access, OTP lockout,
+  reissue/replay, pending payment, dispatch conflicts, reassignment, local account
+  lifecycle, management, reset, idempotent retry and failed-save rollback.
+- HTTP creation is forbidden in the typed offline-client integration test; all
+  the tested quote/booking/read operations complete without an HTTP client.
+- Focused Flutter analysis of new/changed implementation and tests: no issues.
+- Existing four-app online startup/UI tests: 8 passed.
+- Four offline Flutter web builds passed.
+- Compiled browser acceptance: all four offline role homes start with API/Firebase
+  access blocked; one shared local reservation completes customer booking,
+  control dispatch, driver acceptance, OTP pickup, completion and supervisor audit.
+  Reload persistence and local reset passed. No JavaScript runtime errors remained.
+- The optional browser harness serves its own static assets and fulfils the web
+  engine's fallback-font request from the bundled local font; it does not fetch
+  fonts or data from the internet. Backend/Firebase URLs are blocked.
+- Four offline Android release builds passed signature, package identity and
+  manifest-isolation checks before export.
+- Original online Customer debug build passed and retained .demo/network behavior.
+- The four previously exported online APK checksums remain unchanged.
+- Android device runtime / airplane-mode testing was NOT performed: ADB reported
+  no connected phone. Builds and browser checks do not establish physical-device
+  acceptance.
+
+Windows Flutter pub get resolves the new dependencies, but desktop symlink
+generation remains unavailable on this machine. Android/web builds use the
+resolved package configuration with --no-pub, as in the retained foundation.
+
+## Tester instructions and remaining limits
+
+Send the offline files, not the older *-demo.apk files. Follow
+docs/offline-demo.md or the included TESTER-README.txt.
+
+Testers can install the APK directly, start the demo and use airplane mode.
+No laptop, USB, Firebase project, backend URL or account provisioning is needed.
+
+Each APK has its own practice records. To exercise the complete four-role flow,
+switch roles within one APK; do not expect records to move between the four APKs
+or between phones. Use made-up details only. Clearing storage/uninstalling removes
+that installation's data. Local preferences are suitable for demonstration data,
+not the operational record of the retained connected system.
+
+Test fares remain the prior explicit demo values: PGK 100.00 sedan, PGK 150.00 SUV.
+These are not approved tariffs and zero test tax is not a tax policy. Lae/Nadzab
+times display in PNG UTC+10. Initial examples exercise inbound airport-to-city
+transfers; existing outbound stage terminology still needs business review.
+
+Next steps: perform physical-phone testing, collect usability/flow feedback, and
+apply accepted improvements to the shared screens while preserving both modes.
+Real multi-phone integration/security/provider testing belongs in a separately
+authorized connected test environment.
+
+
+================ OFFLINE TESTER INSTRUCTIONS ================
+
+# AeroTrans standalone offline APKs
+
+These four APKs are for testing screens and the four-role workflow without
+internet, a computer, USB, Firebase or a hosted backend. They are separate from
+the retained online/emulator version.
+
+## Files to send to testers
+
+Use the files in **Android APKs/Offline/**:
+
+- aerotrans-customer-offline.apk
+- aerotrans-control-room-offline.apk
+- aerotrans-driver-offline.apk
+- aerotrans-supervisor-offline.apk
+- TESTER-README.txt
+
+The combined archive is **Android APKs/AeroTrans-Offline-Demo-APKs.zip**.
+The earlier *-demo.apk files directly in Android APKs/ still require the local
+backend. Do not send those as the standalone offline version.
+
+## Install and start
+
+1. Send the APK file(s), or send the ZIP and extract it on the phone.
+2. Open an APK on Android. Allow installation from the source app if Android asks.
+3. Open the launcher named AeroTrans Customer Offline, Control Room Offline,
+   Driver Offline or Supervisor Offline.
+4. Tap **Start [role] demo**. No account setup or connection is required.
+5. Airplane mode can stay on. The APKs do not have Android's internet permission.
+
+Android 7 / API 24 or newer is required. ARM32 and ARM64 are included.
+These are internal demonstration builds, signed for sideloading, not store releases.
+The .offline application IDs allow installation alongside the retained .demo apps.
+
+## How the four roles work offline
+
+**Every APK installation has its own practice data. Separate phones and separate
+APKs do not share bookings.**
+
+Each APK starts in its named role and includes all four role screens. To test one
+booking end to end, stay in ONE APK and use the navy role button at the top to
+switch Customer, Control Room, Driver and Supervisor. Return to the dashboard
+with Back before changing roles.
+
+There are five starting personas, three vehicles, one unassigned practice
+reservation and one assigned driver trip. They are explicitly labelled demo data.
+Use the reset control to start again with fresh dates and codes.
+
+## Complete walkthrough
+
+1. Start the Customer demo. Tap Book airport transfer, enter a made-up Lae address
+   and passenger details, choose a future PNG pickup time, get the demo quote and
+   confirm. Note the OFFLINE-BK reference.
+2. On the dashboard, tap the role button and choose **Control Room - Demo Control
+   Room**. Open that same reference and assign an available matching vehicle and
+   driver. Demo Driver Two / DEMO Sedan Two are initially free for a new sedan trip.
+3. Return to the dashboard and switch to **Driver - Demo Driver Two**. Open the
+   assigned reservation, complete all four pre-trip checks, accept, depart and
+   arrive at the pickup point.
+4. Return to the dashboard, switch to Customer, and open that reservation to see
+   its pickup code. Note the six digits.
+5. Switch back to the assigned driver, open the trip and verify the code.
+   Start the transfer, arrive at the destination, then complete it.
+6. Payment stays Pending; this demonstration never collects or verifies money.
+7. Switch to Supervisor to review summaries, booking activity and audit records.
+   Management also supports creating/editing practice staff, setting driver duty,
+   and adding/editing vehicles.
+8. Reset offline demo clears only this installation's practice data and reloads
+   the starting scenarios. It never changes the online backend or other APKs.
+
+## More flow checks
+
+- Cancel a reservation before departure.
+- Reassign before departure and confirm the new driver must accept again.
+- Try assigning a driver/vehicle already busy with another active trip.
+- Try skipping a trip stage; the demo should reject it.
+- Enter five incorrect pickup codes to lock the practice code. At the pickup
+  stage, the Supervisor can reissue one with a reason.
+- Close and reopen the app to check saved practice data and the selected persona.
+- Create a practice driver, put that driver on duty, then assign work.
+- Mark an unused vehicle as Maintenance and confirm it is unavailable for dispatch.
+
+Codes last 24 hours in this practice mode. If returning later, reset the demo or
+reissue the code as Supervisor at the pickup stage.
+
+## Optional practice sign-in / registration
+
+The startup screen also offers a local sign-in/registration walkthrough.
+All starting practice accounts use **DemoOnly2026!**:
+
+| Persona | Email |
+| --- | --- |
+| Customer | customer@offline.aerotrans.invalid |
+| Control Room | control@offline.aerotrans.invalid |
+| Driver | driver@offline.aerotrans.invalid |
+| Second driver | driver2@offline.aerotrans.invalid |
+| Supervisor | supervisor@offline.aerotrans.invalid |
+
+Use made-up details and a made-up password. These accounts and the role switcher
+are local simulations, not real Firebase authentication or a security boundary.
+
+## Scope of this demo
+
+Local JSON snapshots retain reservations, quotations, personas, vehicles, pickup
+codes, attempts, activity and audits through SharedPreferences. Data never uploads.
+Clear app storage/uninstalling removes that app's data. This storage is for practice
+only; the retained NestJS/Firebase implementation remains the operational design.
+
+The demo uses the established test fares of PGK 100.00 for a sedan and PGK 150.00
+for an SUV. They are not operator-approved rates. A zero test tax component is not
+a tax policy. PNG pickup times display in UTC+10 for the Lae / Nadzab pilot.
+
+There is no real payment, GPS movement, flight feed, messaging, notification,
+security-escort dispatch or offline-to-online synchronization. This demonstrates
+the implemented core role flows; it does not validate live backend security or
+provider integrations.
+
+## Rebuild / retain the online version
+
+From PNG2:
+
+    npm run demo:offline:android
+
+This builds the separate lib/main_offline.dart entrypoints with the explicit
+AEROTRANS_OFFLINE_DEMO=true flag. The build script checks package IDs, signatures,
+absence of network permissions and absence of Firebase auto-initialization before
+copying the APKs into the delivery folder. The manifest records source/checksums.
+
+The retained online entrypoints are still lib/main.dart:
+
+    npm run demo:android
+
+They keep their .demo IDs, emulator/backend configuration and normal online
+authentication. The offline flag defaults to false. No NestJS backend was replaced.
+
+
+================ HISTORICAL CONNECTED HANDOFF (6 NOVEMBER) ================
+
+AEROTRANS PNG2 - COMPLETE ANDROID DEMO HANDOFF FOR GPT
+Updated: 6 November 2026
+
+PRIMARY WORKSPACE: C:\Users\Vionne\Documents\PNG Airport Transfer\png2
+REFERENCE PROJECT ONLY: C:\Users\Vionne\Documents\PNG Airport Transfer
+
+PNG2 is the architecture to maintain: NestJS, Firebase, Flutter and shared v1 contracts.
+Do not introduce the older React/SQLite backend. Batch A is already implemented.
+The current local demo now implements the four core role workflows. Inspect the
+modified local source before changing it; do not rebuild completed functionality.
+
+FIRST NEXT TASK: connect a real Android phone, install all four .demo APKs and
+complete physical-device acceptance using docs/android-demo.md. No phone was
+connected during this implementation. All APKs and the local services are ready.
+This is a USB-connected local demonstration; it is not a standalone hosted release.
+No credentials or live provider integrations are supplied in this handoff.
+Do not push, deploy, use production data or claim a payment/notification/tracking
+success without a verified integration. Commercial PNG pricing remains unapproved.
+
+The complete implementation report follows, including source changes, actual
+verification, remaining limitations and the recommended next phase.
+
+# AeroTrans PNG2 — four-role Android demo implementation
+
+Date: 6 November 2026. Target: all four roles on real Android phones.
+Workspace: C:\Users\Vionne\Documents\PNG Airport Transfer\png2.
+Architecture remains NestJS + Firebase + Flutter. The older React/SQLite project
+was not introduced. No push, deployment, production account/data access or live
+provider transaction was performed.
+
+## Delivery status
+
+The four primary applications now launch shared, authenticated mobile workflows.
+Debug ARM32/ARM64 APKs are generated in ignored `.local-tools/demo/apks/`, with
+separate .demo package IDs and explicit demo labels. Use
+[docs/android-demo.md](docs/android-demo.md) for startup, USB installation, local
+credentials, a walkthrough and troubleshooting.
+
+APK SHA-256 checksums and the source fingerprint were verified against the
+current source. All four packaged manifests have the expected demo identity and
+exclude FirebaseInitProvider. Browser screenshots were inspected for mobile
+layout and navy/gold styling. Local backend/emulator services were left running.
+
+This is a computer-hosted, USB-connected demonstration. ADB reported no connected
+phone during implementation. Android installation, native Firebase startup,
+keyboard/navigation behavior and a physical-device walkthrough remain unverified.
+The APK builds are not evidence of device testing or a standalone cloud release.
+
+## Existing work and checkpoint
+
+Verified repository: rmartinezgh/airport-png2, branch main, starting commit
+d6511232f4733a5ae2c566f489e0c7624301aeb4. Batch A already had local uncommitted
+work. It was preserved before these changes in
+`.local-tools/checkpoints/before-android-demo/`: tracked patch, untracked source
+copies and manifest. The earlier checkpoint/batch-a-20261106 reference remains.
+All current work remains local and uncommitted.
+
+## Completed functionality
+
+### Customer
+
+- Firebase email/password sign-in through the SDK; backend registration grants
+  only PASSENGER in the configured isolated Lae scope.
+- Backend-owned profile and custom claims, without frontend role/header fallbacks.
+- Airport transfer form, PNG pickup time, passenger manifest, capacity/luggage
+  validation and server-generated, expiring quotations.
+- Booking creation consumes a customer-owned quote atomically and preserves the
+  same intent on retries. A quote-derived client key works on both Dart VM and web.
+- Reservation list, active/history filters, booking detail, real driver/vehicle
+  information, trip activity, owning-customer pickup code and early cancellation.
+
+### Control Room
+
+- Scoped operational summaries, reservation list and trip details.
+- Actual driver duty, completed-trip totals, vehicle status and availability.
+- Assign/reassign eligible driver and matching vehicle before departure.
+- Transactional resource locks prevent simultaneous dispatch of the same resource.
+- Reassignment clears previous acceptance; cancellation releases active locks.
+- Stale revision/conflict/network errors surface to the user for refresh.
+
+### Driver
+
+- Only assigned bookings are visible; a reassigned former driver loses access.
+- On-duty setting and accurate backend-derived completed trip count/history.
+- Acceptance requires all four pre-trip check confirmations.
+- Departure, arrival at pickup, OTP verification, transfer, destination arrival
+  and completion use server-enforced transitions and expected revisions.
+- Only the assigned driver can verify pickup. Codes expire, are single-use,
+  accumulate failures transactionally and lock after five incorrect attempts.
+- Trip completion never marks payment paid.
+
+### Manager / Supervisor
+
+- Scoped activity summaries, reservations, drivers, fleet and audit records.
+- Staff creation for DISPATCHER, DRIVER and SUPERVISOR; edit name/contact and
+  active/suspended state. Staff scope is derived from the authorized manager.
+- Suspension blocks existing tokens through the backend profile check and
+  disables/revokes the Firebase account. Self-suspension is rejected.
+- Fleet creation with unique plate indexing; edit name/status and driver duty.
+- Active resources cannot be edited/off-duty while locked by a trip.
+- Supervisor OTP reissue requires a reason and is audited; completed trips can
+  be closed without releasing locks owned by a newer booking.
+- MANAGER is not a separate wire role; Supervisor is the required managerial role.
+
+### Shared reliability and isolation
+
+- Upgraded existing Nest modules rather than adding another backend.
+- Global token and role guards require explicit role, organization, branch and
+  airport claims and an active matching server profile.
+- Existing versioned envelopes, string identifiers, canonical DTOs, PGK integer
+  minor units and separate payment states are retained.
+- Booking events/audit mutations are persisted; event ordering uses revision/step.
+- No demo booking fallback, automatic hardcoded driver assignment, fake paid
+  settlement, fake offline-sync acknowledgment, notification or tracking result.
+- Legacy/unconverted controllers stay unavailable behind the foundation guard.
+  Direct Firebase client operational access remains denied; the API is authoritative.
+- Shared mobile screens reuse AviationTheme and the shared API/contract package.
+  Existing legacy screens, BLoCs, domain models and duplicate folders remain.
+- Forms block duplicate taps, report errors, show loading/empty/stale states and
+  retain an uncertain booking intent for a safe retry.
+- Lists/details poll authoritative state every five seconds. Polling pauses when
+  a screen is covered by a dialog or another route.
+- Firebase SDK automatic Android localhost remapping is disabled, preserving the
+  explicit 127.0.0.1 USB endpoint. Debug manifests defer Firebase initialization
+  until local readiness checks and permit debug HTTP; main manifests disallow it.
+- Android Gradle/Kotlin versions were aligned with installed Flutter 3.35.4:
+  AGP 8.9.1, Gradle 8.12, Kotlin 2.1.0. Actual APK metadata reports min API 24,
+  target API 36, arm64-v8a + armeabi-v7a.
+- APK helper fingerprints maintained Dart source and records SHA-256 checksums,
+  avoiding stale Windows Gradle output after shared source changes.
+- The demo backend compiles once and runs without watch mode. Snapshot or handoff
+  writes cannot interrupt active API requests by restarting a development watcher.
+- Explicit demo setup creates only owned, labelled emulator accounts/fleet.
+  Random credentials are saved locally in an ignored file and are not in this report.
+- Local snapshot export/import was added. Auth accounts, scoped profiles and fleet
+  were restored and authenticated after a real emulator restart, without reseeding.
+
+## PNG configuration and money
+
+Pilot remains Lae / Nadzab, currency PGK, Pacific/Port_Moresby (UTC+10).
+PNG eight-digit phone input is normalized to +675; explicit international numbers
+are validated and preserved. No Philippine settings were introduced.
+
+No operator-approved pricing is available. Normal backend startup leaves rates
+unconfigured. `npm run demo:backend` explicitly enables server test fixtures:
+sedan 10000 minor units / PGK 100.00; SUV 15000 / PGK 150.00. Every mobile app
+shows the isolated-demo/test-fare notice. Test taxMinor=0 is not an approved tax
+policy. Cash selection is a preference only. Payments remain PENDING because
+no payment verification/collection provider is configured.
+
+## Modified files in this implementation
+
+The earlier Batch A changes remain in the working tree. This demo adds/updates:
+
+- `backend/src/app.module.ts`, `main.ts`, `health.controller.ts`,
+  `contracts/contracts.controller.ts`.
+- `backend/src/common/workflow.ts`; `common/guards/auth.guard.ts`,
+  `roles.guard.ts`, `foundation.guard.ts`.
+- `backend/src/config/demo.ts`, `config/config.controller.ts`.
+- Existing `backend/src/modules/auth/`: service, controller, module.
+- Existing `backend/src/modules/bookings/`: service, controller, service spec.
+- Existing `backend/src/modules/quotations/`: service, controller, service spec.
+- Existing `backend/src/modules/resources/`: service and controller.
+- Existing `backend/src/modules/dispatch/`, `trips/`, `reports/`: services
+  and controllers; existing module registration remains.
+- `backend/src/modules/payments/payments.service.ts` and
+  `modules/offline-sync/offline-sync.service.ts`.
+- `backend/test/demo.integration.ts`, `test/jest-demo.json`,
+  `test/foundation.e2e-spec.ts`.
+- Shared Flutter `lib/services/png_api_client.dart`,
+  `lib/config/local_firebase.dart`, `lib/png_transfer_flutter_core.dart`.
+- New shared `lib/screens/mobile_demo_app.dart`,
+  `mobile_demo_booking.dart`, `mobile_demo_management.dart`,
+  `test/mobile_demo_test.dart`.
+- In passenger_web, control_room_web, driver_mobile and admin_web:
+  `lib/main.dart`, `test/widget_test.dart`, Android settings,
+  app Gradle files, wrapper properties and main/debug manifests.
+- Debug-only demo `google-services.json` variants for passenger_web,
+  control_room_web and driver_mobile contain placeholder emulator identifiers.
+- Root `package.json`; `scripts/local.mjs`, `demo-setup.mjs`,
+  `demo-phone.mjs`, `demo-test.mjs`, `build-android-demo.ps1`,
+  `browser-demo.mjs`.
+- README, application/contract/local development guidance, this report,
+  `docs/android-demo.md` and forwardable `update.txt`.
+
+## Verification actually performed
+
+| Check | Result |
+| --- | --- |
+| Backend compilation: npm --prefix backend run build | Passed |
+| Backend unit tests: npm --prefix backend test | 6 suites, 20 tests passed |
+| Shared TypeScript analysis: npm run typecheck | Passed |
+| Shared TypeScript fixtures/policy tests | 5 passed |
+| Local environment isolation tests | 2 passed; conflicting cloud config rejected |
+| Auth/Firestore/RTDB/Storage smoke test | Passed; own fixtures cleaned |
+| Nest HTTP envelope/guard foundation test | 1 passed |
+| Four-role real HTTP + emulator integration | 1 extensive scenario passed using separate accounts and random isolated organization; own records cleaned |
+| Shared Flutter tests | 26 passed, including form validation, duplicate submission blocking, uncertain booking retry and payment/history display |
+| Four app startup/login/error tests | 8 passed, 2 per app |
+| Focused Flutter analysis on changed shared code/tests | No issues |
+| Four Flutter web builds | Passed for browser acceptance |
+| Four debug Android APK builds | Passed; metadata/ARM ABIs/demo package IDs inspected |
+| Local emulator snapshot export and restart/import | Passed; saved identities/profiles/fleet recovered without reseeding |
+| Compiled demo launcher stability | Passed; the final browser workflow uses the compiled server, which retained its process while handoff files changed |
+| Compiled Flutter browser workflow | Passed: real four-role sign-in, customer server quote/booking, control assignment, driver checks/departure/OTP/transfer/completion, supervisor audit; payment pending; no non-local data/API requests or JS runtime errors |
+| Physical phone / Android emulator runtime | Not performed; no connected Android device |
+| Production, merchant, GPS, messaging, real flight or other provider integration | Not performed |
+
+The API integration covers public registration and role injection rejection,
+foreign/customer/driver scope, manager permissions, server quotes, retry after
+quote expiry, assignment/reassignment and lost old-driver access, required
+acceptance, forbidden generic verification, OTP attempts/lock/reissue/replay,
+completion/history, separate pending payment, racing resource assignment,
+cancellation, account suspension, self-suspension and scoped audit activity.
+
+Some Node test workers initially hit sandbox spawn EPERM; their reruns outside
+that restricted process sandbox passed. Windows desktop symlink generation is
+still unavailable; existing resolved dependencies permitted --no-pub Android/web
+builds and tests. First native build exposed incompatible original Gradle/Kotlin
+versions; the aligned toolchain builds successfully. One emulator restart required
+stopping the positively identified leftover demo Firestore process after shutdown.
+No unrelated process was terminated.
+
+## Remaining work and decisions
+
+1. Connect a real phone, authorize USB debugging, run the phone install helper and
+   perform the entire four-role walkthrough. Check native Firebase startup,
+   app switching, keyboard, back navigation, reconnection and lifecycle behavior.
+2. Decide whether the public demo must work without the laptop/USB. That needs
+   separately authorized nonproduction hosting/Firebase configuration and access;
+   it has not been deployed or enabled here.
+3. Obtain operator-approved Lae routes, tariffs, capacity/compliance policies,
+   cancellation rules and tax treatment before commercial use.
+4. Select and authorize actual payment, GPS/map, flight, SMS/WhatsApp/notification
+   providers where needed. None are represented as integrated.
+5. Add password recovery/verification and a staff invitation/password-change flow,
+   abuse/rate limiting, production rule/configuration review, operational monitoring,
+   backup/restore policy, pagination and credential/release signing management.
+6. Persist an interrupted client booking intent across process death; current safe
+   automatic retry protection covers the open form/session. Verify reservations
+   before starting another form after an app restart.
+7. Current resource locks are conservative: one unfinished assignment per driver
+   and vehicle regardless of scheduled time. Scheduling/overlap policy needs an
+   operator decision. Mid-trip reassignment/abort handling is not activated.
+8. Expand corporate/security/operator workflows, compliance, e-POD and offline
+   sync through the existing models only after the core demo is accepted.
+9. Duplicate Flutter folders remain intentionally undeleted. Only the four primary
+   entrypoints launch the new demo; native platforms other than Android are not
+   verified.
+10. The demonstrated workflow is inbound airport-to-Lae. Outbound transfers are
+    accepted by the shared contract but retain the legacy AT_AIRPORT pickup-state
+    name; confirm/refine directional stage semantics before outbound operations.
+
+## Recommended next phase
+
+First complete physical-phone acceptance and fix any native/device issues.
+Then prepare a controlled nonproduction hosted pilot with approved pricing and
+operator configuration, account lifecycle/security hardening and a signed internal
+Android distribution. Integrate providers independently with verifiable outcomes.
+Do not treat this isolated demonstration as a production release.

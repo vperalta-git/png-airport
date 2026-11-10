@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1",
+  "roles": [
+    "PASSENGER",
+    "DISPATCHER",
+    "DRIVER",
+    "SUPERVISOR",
+    "SUPER_ADMIN",
+    "SECURITY",
+    "OPERATOR",
+    "CORPORATE_BOOKER"
+  ],
+  "bookingStatuses": [
+    "DRAFT",
+    "QUOTATION",
+    "BOOKING_REQUESTED",
+    "AVAILABILITY_CONFIRMED",
+    "CONFIRMED",
+    "DISPATCHED",
+    "DRIVER_EN_ROUTE",
+    "AT_AIRPORT",
+    "PASSENGER_VERIFIED",
+    "TRANSFER_IN_PROGRESS",
+    "ARRIVED_DESTINATION",
+    "COMPLETED",
+    "CLOSED",
+    "CANCELLED"
+  ],
+  "paymentStatuses": [
+    "PENDING",
+    "AUTHORIZED",
+    "PAID",
+    "FAILED",
+    "REFUNDED",
+    "CANCELLED"
+  ],
+  "vehicleCategories": [
+    "STANDARD_SEDAN",
+    "EXECUTIVE_SUV",
+    "HEAVY_4WD",
+    "ARMORED_SUV",
+    "COASTER_BUS"
+  ],
+  "escortTypes": [
+    "NONE",
+    "STATIC_OFFICER",
+    "ARMED_ESCORT_CHASE_VEHICLE",
+    "CLOSE_PROTECTION_CONVOY"
+  ],
+  "directions": [
+    "INBOUND_AIRPORT_TO_CITY",
+    "OUTBOUND_CITY_TO_AIRPORT",
+    "INTERCITY_TRANSFER"
+  ]
+}

@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Batch A: no direct-client operational access. Admin SDK writes are owned
+    // by the local backend/test harness. Batch B must introduce scoped read rules
+    // only after verified identity, ownership and protected role fields exist.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
