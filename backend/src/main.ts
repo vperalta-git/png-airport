@@ -3,7 +3,7 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { setupApplication } from "./app.setup";
 import { runtimeIdentity } from "./config/runtime-environment";
-export async function bootstrap() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   setupApplication(app);
   const config = new DocumentBuilder()
