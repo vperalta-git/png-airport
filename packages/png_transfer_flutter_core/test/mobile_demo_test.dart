@@ -50,6 +50,42 @@ Future<void> reach(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets(
+      'separate arrival and departure queues open the matching booking form',
+      (tester) async {
+    final arrival = fixture('booking')..['status'] = 'BOOKING_REQUESTED';
+    arrival['input']['destinationAddress'] = 'ARRIVAL destination';
+    final departure = fixture('booking')..['status'] = 'BOOKING_REQUESTED';
+    departure['input']['direction'] = 'OUTBOUND_CITY_TO_AIRPORT';
+    departure['input']['destinationAddress'] = 'DEPARTURE pickup';
+    final paths = <String>[];
+    final api = PngApiClient(client: MockClient((request) async {
+      paths.add(request.url.path);
+      if (request.url.path.endsWith('/config')) return ok(catalog);
+      return ok(
+          request.url.path.endsWith('/departures') ? [departure] : [arrival]);
+    }));
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(body: DemoBookings(api: api, profile: profile))));
+    await tester.pumpAndSettle();
+    expect(find.text('ARRIVAL destination'), findsOneWidget);
+    expect(find.text('DEPARTURE pickup'), findsNothing);
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('transfer-lane-Departures')));
+    await tester.tap(find.byKey(const ValueKey('transfer-lane-Departures')));
+    await tester.pumpAndSettle();
+    expect(paths, contains('/api/v1/bookings/departures'));
+    expect(find.text('ARRIVAL destination'), findsNothing);
+    expect(find.text('DEPARTURE pickup'), findsOneWidget);
+    await reach(tester, 'Book departure transfer');
+    expect(find.text('Pickup address in Lae'), findsOneWidget);
+    expect(
+        tester
+            .widget<DemoBookingForm>(find.byType(DemoBookingForm))
+            .initialDirection,
+        'OUTBOUND_CITY_TO_AIRPORT');
+    await tester.pumpWidget(const SizedBox());
+  });
   for (final role in ['PASSENGER', 'DISPATCHER', 'DRIVER', 'SUPERVISOR']) {
     testWidgets('$role login validates input and blocks repeated submissions',
         (tester) async {
@@ -120,7 +156,8 @@ void main() {
     expect(find.text('PGK 123.45'), findsOneWidget);
     await reach(tester, 'Confirm demo reservation');
     expect(sent.length, 1);
-    await tester.scrollUntilVisible(find.textContaining('result is uncertain'), -250,
+    await tester.scrollUntilVisible(
+        find.textContaining('result is uncertain'), -250,
         scrollable: find.byType(Scrollable).first);
     await tester.pumpAndSettle();
     expect(find.textContaining('result is uncertain'), findsOneWidget);

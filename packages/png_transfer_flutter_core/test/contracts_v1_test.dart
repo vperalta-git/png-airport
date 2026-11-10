@@ -9,6 +9,15 @@ Map<String, dynamic> fixture(String name) =>
     jsonDecode(File('../types/fixtures/$name.v1.json').readAsStringSync())
         as Map<String, dynamic>;
 void main() {
+  test('departure pickup stage survives the shared booking contract', () {
+    final record = fixture('booking');
+    record['input']['direction'] = 'OUTBOUND_CITY_TO_AIRPORT';
+    record['status'] = 'AT_PICKUP';
+    final parsed = BookingV1.fromJson(record);
+    expect(parsed.status, 'AT_PICKUP');
+    expect(parsed.input.toJson()['direction'], 'OUTBOUND_CITY_TO_AIRPORT');
+    expect(parsed.toJson(), record);
+  });
   test(
       'Dart enum mirrors match the authoritative TypeScript definition fixture',
       () {

@@ -30,11 +30,12 @@ void main() {
       Map<String, dynamic>.from(
           (await store.get(customer, '/api/v1/bookings') as List)
               .firstWhere((b) => b['status'] == 'BOOKING_REQUESTED'));
-  Future<Map<String, dynamic>> reserve() async {
+  Future<Map<String, dynamic>> reserve(
+      {String direction = 'INBOUND_AIRPORT_TO_CITY'}) async {
     final quote = await store.mutate(customer, 'POST', '/api/v1/quotes', {
       'input': {
         'airportId': 'airport_nadzab_lae',
-        'direction': 'INBOUND_AIRPORT_TO_CITY',
+        'direction': direction,
         'vehicleCategory': 'STANDARD_SEDAN',
         'securityEscortType': 'NONE',
         'pickupDateTime': DateTime.fromMillisecondsSinceEpoch(
@@ -58,6 +59,58 @@ void main() {
     }));
   }
 
+  test(
+      'offline departure has its own queue and verifies pickup at the customer address',
+      () async {
+    var b = await reserve(direction: 'OUTBOUND_CITY_TO_AIRPORT');
+    final id = b['id'];
+    b = Map<String, dynamic>.from(
+        await store.mutate(control, 'POST', '/api/v1/dispatch/$id/assign', {
+      'driverId': secondDriver,
+      'vehicleId': 'offline-sedan-2',
+      'expectedRevision': b['revision']
+    }));
+    b = Map<String, dynamic>.from(await store
+        .mutate(secondDriver, 'POST', '/api/v1/dispatch/$id/acknowledge', {
+      'inspection': {
+        'seatbelts': true,
+        'tyres': true,
+        'fuel': true,
+        'radio': true
+      },
+      'expectedRevision': b['revision']
+    }));
+    b = Map<String, dynamic>.from(await store.mutate(
+        secondDriver,
+        'PATCH',
+        '/api/v1/bookings/$id/status',
+        {'status': 'DRIVER_EN_ROUTE', 'expectedRevision': b['revision']}));
+    await expectLater(
+        store.mutate(secondDriver, 'PATCH', '/api/v1/bookings/$id/status',
+            {'status': 'AT_AIRPORT', 'expectedRevision': b['revision']}),
+        throwsA(isA<ApiException>()));
+    b = Map<String, dynamic>.from(await store.mutate(
+        secondDriver,
+        'PATCH',
+        '/api/v1/bookings/$id/status',
+        {'status': 'AT_PICKUP', 'expectedRevision': b['revision']}));
+    final code =
+        await store.get(customer, '/api/v1/bookings/$id/pickup-credential');
+    b = Map<String, dynamic>.from(await store.mutate(
+        secondDriver,
+        'POST',
+        '/api/v1/bookings/$id/verify-passenger',
+        {'code': code['code'], 'expectedRevision': b['revision']}));
+    expect(b['status'], 'PASSENGER_VERIFIED');
+    expect(
+        (await store.get(customer, '/api/v1/bookings/departures') as List)
+            .any((v) => v['id'] == id),
+        isTrue);
+    expect(
+        (await store.get(customer, '/api/v1/bookings/arrivals') as List)
+            .any((v) => v['id'] == id),
+        isFalse);
+  });
   test('offline fixtures, scopes and persistence require no HTTP client',
       () async {
     await HttpOverrides.runZoned(() async {

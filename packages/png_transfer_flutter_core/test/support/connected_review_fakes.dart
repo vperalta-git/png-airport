@@ -71,6 +71,8 @@ class ReviewApi extends PngApiClient {
             ? readProfile!()
             : reviewProfile(profileRole, uid: identity.uid!);
       case '/api/v1/bookings':
+      case '/api/v1/bookings/arrivals':
+      case '/api/v1/bookings/departures':
       case '/api/v1/resources/drivers':
       case '/api/v1/resources/vehicles':
       case '/api/v1/reports/audit':

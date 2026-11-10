@@ -80,6 +80,20 @@ String _email(dynamic value) {
 
 bool _terminal(dynamic status) =>
     ['COMPLETED', 'CLOSED', 'CANCELLED'].contains(status);
+Map<String, dynamic> _laneSummary(List<dynamic> jobs) => {
+      'bookings': jobs.length,
+      'awaitingAssignment': jobs
+          .where((b) => b['dispatch'] == null && !_terminal(b['status']))
+          .length,
+      'activeTrips': jobs
+          .where((b) => b['dispatch'] != null && !_terminal(b['status']))
+          .length,
+      'completedTrips': jobs
+          .where((b) => ['COMPLETED', 'CLOSED'].contains(b['status']))
+          .length,
+      'pendingPayments':
+          jobs.where((b) => b['payment']['status'] == 'PENDING').length,
+    };
 const _early = [
   'BOOKING_REQUESTED',
   'AVAILABILITY_CONFIRMED',
@@ -684,10 +698,20 @@ class OfflineDemoStore extends ChangeNotifier {
     final parts = _parts(path);
     if (path == '/api/v1/config') return _copy(catalog);
     if (path == '/api/v1/auth/me') return _public(_copy(u));
-    if (path == '/api/v1/bookings') {
+    if ([
+      '/api/v1/bookings',
+      '/api/v1/bookings/arrivals',
+      '/api/v1/bookings/departures'
+    ].contains(path)) {
       return (s['bookings'] as Map)
           .values
           .where((b) => _visible(u, b))
+          .where((b) =>
+              path == '/api/v1/bookings' ||
+              b['input']['direction'] ==
+                  (path.endsWith('/departures')
+                      ? 'OUTBOUND_CITY_TO_AIRPORT'
+                      : 'INBOUND_AIRPORT_TO_CITY'))
           .map((b) => _copy(b))
           .toList()
           .reversed
@@ -707,6 +731,12 @@ class OfflineDemoStore extends ChangeNotifier {
       _staff(u);
       final jobs = (s['bookings'] as Map).values.toList();
       return {
+        'arrivals': _laneSummary(jobs
+            .where((b) => b['input']['direction'] == 'INBOUND_AIRPORT_TO_CITY')
+            .toList()),
+        'departures': _laneSummary(jobs
+            .where((b) => b['input']['direction'] == 'OUTBOUND_CITY_TO_AIRPORT')
+            .toList()),
         'bookings': jobs.length,
         'awaitingAssignment': jobs
             .where((b) => b['dispatch'] == null && !_terminal(b['status']))
@@ -953,9 +983,12 @@ class OfflineDemoStore extends ChangeNotifier {
               b['dispatch']?['assignedDriverId'] != uid) {
             _fail('Assigned driver required.');
           }
-          const next = {
+          final next = {
             'DISPATCHED': 'DRIVER_EN_ROUTE',
-            'DRIVER_EN_ROUTE': 'AT_AIRPORT',
+            'DRIVER_EN_ROUTE':
+                b['input']['direction'] == 'OUTBOUND_CITY_TO_AIRPORT'
+                    ? 'AT_PICKUP'
+                    : 'AT_AIRPORT',
             'PASSENGER_VERIFIED': 'TRANSFER_IN_PROGRESS',
             'TRANSFER_IN_PROGRESS': 'ARRIVED_DESTINATION',
             'ARRIVED_DESTINATION': 'COMPLETED'
@@ -975,7 +1008,10 @@ class OfflineDemoStore extends ChangeNotifier {
       if (p[2] == 'reset-otp' && method == 'POST') {
         _staff(u, manager: true);
         _revision(b, data['expectedRevision']);
-        if (b['status'] != 'AT_AIRPORT') {
+        if (b['status'] !=
+            (b['input']['direction'] == 'OUTBOUND_CITY_TO_AIRPORT'
+                ? 'AT_PICKUP'
+                : 'AT_AIRPORT')) {
           _fail('Reissue only at the pickup stage.');
         }
         final reason = _text(data['reason'], 'reason', max: 500),
@@ -995,7 +1031,12 @@ class OfflineDemoStore extends ChangeNotifier {
         }
         _revision(b, data['expectedRevision']);
         final c = (s['credentials'] as Map)[b['id']];
-        if (b['status'] != 'AT_AIRPORT' || c == null || c['used'] == true) {
+        if (b['status'] !=
+                (b['input']['direction'] == 'OUTBOUND_CITY_TO_AIRPORT'
+                    ? 'AT_PICKUP'
+                    : 'AT_AIRPORT') ||
+            c == null ||
+            c['used'] == true) {
           _fail('Pickup verification is not available at this stage.');
         }
         if (DateTime.parse(c['expiresAt']).isBefore(

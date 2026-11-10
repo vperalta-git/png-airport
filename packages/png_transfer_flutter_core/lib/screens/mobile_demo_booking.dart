@@ -15,6 +15,13 @@ class _DemoBookingsState extends State<DemoBookings> {
   bool loading = false, first = true;
   String? error;
   String filter = 'Active';
+  String lane = 'Arrivals';
+  String get laneDirection => lane == 'Departures'
+      ? 'OUTBOUND_CITY_TO_AIRPORT'
+      : 'INBOUND_AIRPORT_TO_CITY';
+  Map get laneSummary => lane == 'All transfers'
+      ? summary
+      : (summary[lane.toLowerCase()] as Map? ?? {});
   DateTime? lastRead;
   Timer? timer;
   int requestId = 0;
@@ -42,7 +49,9 @@ class _DemoBookingsState extends State<DemoBookings> {
     setState(() => loading = true);
     try {
       final data = await Future.wait([
-        widget.api.get('/api/v1/bookings'),
+        widget.api.get(lane == 'All transfers'
+            ? '/api/v1/bookings'
+            : '/api/v1/bookings/${lane.toLowerCase()}'),
         widget.api.get('/api/v1/config'),
         if (staff) widget.api.get('/api/v1/reports/dashboard'),
         if (staff || role == 'DRIVER')
@@ -76,7 +85,11 @@ class _DemoBookingsState extends State<DemoBookings> {
   Future<void> create() async {
     await Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => DemoBookingForm(
-            api: widget.api, profile: widget.profile, catalog: catalog)));
+            api: widget.api,
+            profile: widget.profile,
+            catalog: catalog,
+            initialDirection: laneDirection,
+            lockDirection: true)));
     if (mounted) load();
   }
 
@@ -107,6 +120,10 @@ class _DemoBookingsState extends State<DemoBookings> {
   @override
   Widget build(BuildContext context) {
     final visible = bookings.where((b) {
+      if (lane != 'All transfers' &&
+          b.input.toJson()['direction'] != laneDirection) {
+        return false;
+      }
       final done = ['COMPLETED', 'CLOSED', 'CANCELLED'].contains(b.status);
       return filter == 'All' || (filter == 'History' ? done : !done);
     }).toList();
@@ -165,17 +182,43 @@ class _DemoBookingsState extends State<DemoBookings> {
           if (error != null)
             DemoMessage('${error!} Displayed records may be out of date.',
                 retry: loading ? null : load),
+          const SizedBox(height: 12),
+          Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: ['Arrivals', 'Departures', 'All transfers']
+                  .map((value) => ChoiceChip(
+                        key: ValueKey('transfer-lane-$value'),
+                        label: Text(value),
+                        selected: lane == value,
+                        onSelected: loading
+                            ? null
+                            : (_) {
+                                setState(() => lane = value);
+                                load();
+                              },
+                      ))
+                  .toList()),
+          const SizedBox(height: 12),
+          Text(
+              lane == 'Arrivals'
+                  ? 'Arrivals · Airport pickup → Lae destination'
+                  : lane == 'Departures'
+                      ? 'Departures · Lae pickup → Airport drop-off'
+                      : 'All airport transfers',
+              style: Theme.of(context).textTheme.titleMedium),
           if (staff)
             LayoutBuilder(builder: (context, constraints) {
               final columns = constraints.maxWidth >= 640 ? 4 : 2;
               final width =
                   (constraints.maxWidth - 10 * (columns - 1)) / columns;
               return Wrap(spacing: 10, runSpacing: 10, children: [
-                _metric('Awaiting assignment', summary['awaitingAssignment'],
-                    width),
-                _metric('Active trips', summary['activeTrips'], width),
-                _metric('Completed', summary['completedTrips'], width),
-                _metric('Payments pending', summary['pendingPayments'], width)
+                _metric('Awaiting assignment',
+                    laneSummary['awaitingAssignment'], width),
+                _metric('Active trips', laneSummary['activeTrips'], width),
+                _metric('Completed', laneSummary['completedTrips'], width),
+                _metric(
+                    'Payments pending', laneSummary['pendingPayments'], width)
               ]);
             }),
           if (role == 'DRIVER' && drivers.isNotEmpty)
@@ -211,7 +254,9 @@ class _DemoBookingsState extends State<DemoBookings> {
                             ? null
                             : create,
                         icon: const Icon(Icons.add),
-                        label: const Text('Book airport transfer')))),
+                        label: Text(lane == 'Departures'
+                            ? 'Book departure transfer'
+                            : 'Book arrival transfer')))),
           const SizedBox(height: 16),
           Wrap(
               spacing: 8,
@@ -272,6 +317,14 @@ class _DemoBookingsState extends State<DemoBookings> {
                                 StatusChipV1(b.paymentStatus, payment: true)
                               ]),
                               const SizedBox(height: 8),
+                              Text(
+                                  b.input.toJson()['direction'] ==
+                                          'OUTBOUND_CITY_TO_AIRPORT'
+                                      ? 'DEPARTURE · To Nadzab Airport'
+                                      : 'ARRIVAL · From Nadzab Airport',
+                                  style:
+                                      Theme.of(context).textTheme.labelLarge),
+                              const SizedBox(height: 6),
                               Text(
                                   b.input.toJson()['destinationAddress']
                                       as String,
@@ -368,11 +421,15 @@ class _DemoBookingsState extends State<DemoBookings> {
 class DemoBookingForm extends StatefulWidget {
   final PngApiClient api;
   final Map<String, dynamic> profile, catalog;
+  final String initialDirection;
+  final bool lockDirection;
   const DemoBookingForm(
       {super.key,
       required this.api,
       required this.profile,
-      required this.catalog});
+      required this.catalog,
+      this.initialDirection = 'INBOUND_AIRPORT_TO_CITY',
+      this.lockDirection = false});
   @override
   State<DemoBookingForm> createState() => _DemoBookingFormState();
 }
@@ -383,7 +440,7 @@ class _DemoBookingFormState extends State<DemoBookingForm> {
       phone = TextEditingController();
   final List<TextEditingController> names = [];
   String? category;
-  String direction = 'INBOUND_AIRPORT_TO_CITY';
+  late String direction;
   int luggage = 1;
   late DateTime pickup;
   QuotationV1? quote;
@@ -398,6 +455,7 @@ class _DemoBookingFormState extends State<DemoBookingForm> {
   @override
   void initState() {
     super.initState();
+    direction = widget.initialDirection;
     pickup = DateTime.now().toUtc().add(const Duration(hours: 11));
     category = categories.isEmpty ? null : categories.first['id'] as String;
     names
@@ -545,7 +603,10 @@ class _DemoBookingFormState extends State<DemoBookingForm> {
   Widget build(BuildContext context) => PopScope(
       canPop: !busy && !uncertain,
       child: Scaffold(
-          appBar: AppBar(title: const Text('Book airport transfer')),
+          appBar: AppBar(
+              title: Text(direction == 'OUTBOUND_CITY_TO_AIRPORT'
+                  ? 'Book departure transfer'
+                  : 'Book arrival transfer')),
           body: Column(children: [
             const DemoBanner(),
             Expanded(
@@ -576,12 +637,12 @@ class _DemoBookingFormState extends State<DemoBookingForm> {
                         items: const [
                           DropdownMenuItem(
                               value: 'INBOUND_AIRPORT_TO_CITY',
-                              child: Text('Airport to Lae')),
+                              child: Text('Arrival · Airport pickup to Lae')),
                           DropdownMenuItem(
                               value: 'OUTBOUND_CITY_TO_AIRPORT',
-                              child: Text('Lae to airport'))
+                              child: Text('Departure · Lae pickup to airport'))
                         ],
-                        onChanged: locked
+                        onChanged: locked || widget.lockDirection
                             ? null
                             : (v) => setState(() {
                                   direction = v!;
@@ -928,16 +989,20 @@ class _DemoBookingDetailState extends State<DemoBookingDetail> {
   @override
   Widget build(BuildContext context) {
     final input = booking.input.toJson();
+    final departure = input['direction'] == 'OUTBOUND_CITY_TO_AIRPORT';
     final next = {
-      'DRIVER_EN_ROUTE': 'AT_AIRPORT',
+      'DRIVER_EN_ROUTE': departure ? 'AT_PICKUP' : 'AT_AIRPORT',
       'PASSENGER_VERIFIED': 'TRANSFER_IN_PROGRESS',
       'TRANSFER_IN_PROGRESS': 'ARRIVED_DESTINATION',
       'ARRIVED_DESTINATION': 'COMPLETED'
     }[booking.status];
     final nextLabel = {
-      'AT_AIRPORT': 'I have arrived at the pickup point',
+      'AT_AIRPORT': 'Arrived at airport pickup',
+      'AT_PICKUP': 'Arrived at customer pickup',
       'TRANSFER_IN_PROGRESS': 'Start transfer',
-      'ARRIVED_DESTINATION': 'Arrived at destination',
+      'ARRIVED_DESTINATION': departure
+          ? 'Arrived at airport drop-off'
+          : 'Arrived at Lae destination',
       'COMPLETED': 'Complete trip'
     }[next];
     return Scaffold(
@@ -959,7 +1024,16 @@ class _DemoBookingDetailState extends State<DemoBookingDetail> {
               StatusChipV1(booking.paymentStatus, payment: true)
             ]),
             const SizedBox(height: 14),
-            Text(input['destinationAddress'] as String,
+            Text(
+                departure
+                    ? 'Departure · Lae to airport'
+                    : 'Arrival · Airport to Lae',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Text(
+                departure
+                    ? 'Pickup: ${input['destinationAddress']}\nDrop-off: Nadzab Tomodachi Airport (LAE)'
+                    : 'Pickup: Nadzab Tomodachi Airport (LAE)\nDrop-off: ${input['destinationAddress']}',
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(pngTime(input['pickupDateTime'] as String)),
@@ -1022,11 +1096,14 @@ class _DemoBookingDetailState extends State<DemoBookingDetail> {
               _actionButton(
                   booking.dispatch?['acceptedAt'] == null
                       ? 'Accept assignment & pre-trip checks'
-                      : 'Depart for airport',
+                      : departure
+                          ? 'Drive to customer pickup'
+                          : 'Drive to airport pickup',
                   booking.dispatch?['acceptedAt'] == null
                       ? accept
                       : () => setStatus('DRIVER_EN_ROUTE')),
-            if (role == 'DRIVER' && booking.status == 'AT_AIRPORT')
+            if (role == 'DRIVER' &&
+                booking.status == (departure ? 'AT_PICKUP' : 'AT_AIRPORT'))
               _actionButton('Verify passenger pickup', verify),
             if (role == 'DRIVER' && next != null)
               _actionButton(nextLabel!, () => setStatus(next)),
@@ -1036,7 +1113,8 @@ class _DemoBookingDetailState extends State<DemoBookingDetail> {
             if (manager && booking.status == 'COMPLETED')
               _actionButton(
                   'Close completed reservation', () => setStatus('CLOSED')),
-            if (manager && booking.status == 'AT_AIRPORT')
+            if (manager &&
+                booking.status == (departure ? 'AT_PICKUP' : 'AT_AIRPORT'))
               _actionButton('Reissue pickup code', reset, outlined: true),
             const SizedBox(height: 20),
             Text('Trip activity',

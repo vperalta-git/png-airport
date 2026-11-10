@@ -100,7 +100,7 @@ try {
       .getByRole("button", { name: "Switch account", exact: true })
       .waitFor({ timeout: 60000 });
     const expected = [
-      "/api/v1/bookings",
+      "/api/v1/bookings/arrivals",
       "/api/v1/config",
       ...(["DISPATCHER", "SUPERVISOR"].includes(role)
         ? [
@@ -133,6 +133,19 @@ try {
       responses.every((r) => r.status < 400),
       "A workspace API request failed",
     );
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url() === apiOrigin + "/api/v1/bookings/departures" &&
+          response.status() === 200,
+        { timeout: 30000 },
+      ),
+      page.getByText("Departures", { exact: false }).first().click(),
+    ]);
+    await page
+      .getByText("Departures · Lae pickup", { exact: false })
+      .first()
+      .waitFor();
     await page.screenshot({
       path: resolve(folder, `${role.toLowerCase()}-${width}.png`),
       fullPage: true,
