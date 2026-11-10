@@ -25,21 +25,32 @@ Future<void> runLocalFoundation(String role) async {
 }
 
 class LocalFirebase {
-  static FirebaseOptions get options => FirebaseOptions(
-        apiKey: 'local-emulator-key',
-        appId:
-            '1:000000000000:${kIsWeb ? 'web' : defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android'}:0000000000000000000000',
-        messagingSenderId: '000000000000',
-        projectId: AppConfig.projectId,
-        storageBucket: '${AppConfig.projectId}.appspot.com',
-        databaseURL:
-            'https://${AppConfig.projectId}-default-rtdb.firebaseio.com',
-      );
+  static FirebaseOptions get options => AppConfig.hostedTest
+      ? const FirebaseOptions(
+          apiKey: AppConfig.firebaseWebApiKey,
+          appId: AppConfig.firebaseWebAppId,
+          messagingSenderId: AppConfig.firebaseSenderId,
+          projectId: AppConfig.projectId,
+          authDomain: AppConfig.firebaseAuthDomain)
+      : FirebaseOptions(
+          apiKey: 'local-emulator-key',
+          appId:
+              '1:000000000000:${kIsWeb ? 'web' : defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android'}:0000000000000000000000',
+          messagingSenderId: '000000000000',
+          projectId: AppConfig.projectId,
+          storageBucket: '${AppConfig.projectId}.appspot.com',
+          databaseURL:
+              'https://${AppConfig.projectId}-default-rtdb.firebaseio.com',
+        );
 
-  /// Check the local backend and all emulator HTTP services before any SDK/app use.
+  /// Verify backend identity before SDK use; local builds also require emulators.
   /// SDK initialization failure never falls back to a cloud project or demo session.
   static Future<void> initialize() async {
     AppConfig.validate();
+    if (AppConfig.hostedTest && !kIsWeb) {
+      throw StateError(
+          'Hosted test configuration currently supports the website only. Register and configure the Android test app before building a hosted APK.');
+    }
     final client = http.Client();
     try {
       final origin = AppConfig.normalizeUrl(AppConfig.apiBaseUrl);
@@ -48,25 +59,27 @@ class LocalFirebase {
       final response = await client
           .send(request)
           .then(http.Response.fromStream)
-          .timeout(const Duration(seconds: 4));
+          .timeout(const Duration(seconds: 12));
       final envelope = jsonDecode(response.body) as Map<String, dynamic>;
       final data = envelope['data'] as Map<String, dynamic>;
       if (response.statusCode != 200 ||
           envelope['schemaVersion'] != '1' ||
           envelope['success'] != true ||
-          data['environment'] != 'local' ||
+          data['environment'] != AppConfig.environment ||
           data['projectId'] != AppConfig.projectId) {
         throw StateError(
-            'The backend is not the isolated AeroTrans local runtime.');
+            'The backend does not match the configured AeroTrans review environment.');
       }
       // Four independent readiness probes. Responses may be 404, but redirects
       // and unavailable services are rejected before creating any Firebase client.
-      for (final port in [
-        AppConfig.authPort,
-        AppConfig.firestorePort,
-        AppConfig.databasePort,
-        AppConfig.storagePort
-      ]) {
+      for (final port in AppConfig.hostedTest
+          ? <int>[]
+          : [
+              AppConfig.authPort,
+              AppConfig.firestorePort,
+              AppConfig.databasePort,
+              AppConfig.storagePort
+            ]) {
         final path = port == AppConfig.databasePort
             ? '/.json?ns=${AppConfig.projectId}-default-rtdb'
             : '/';
@@ -83,17 +96,19 @@ class LocalFirebase {
         }
       }
     } catch (error) {
-      throw StateError(
-          'Local services unavailable. Start npm run emulators and npm run backend. $error');
+      throw StateError(AppConfig.hostedTest
+          ? 'Hosted review services are unavailable. Check the test API connection.'
+          : 'Local services unavailable. Start npm run emulators and npm run backend. $error');
     } finally {
       client.close();
     }
     if (Firebase.apps.isNotEmpty &&
         Firebase.app().options.projectId != AppConfig.projectId) {
       throw StateError(
-          'An existing Firebase app points outside the local demo project.');
+          'An existing Firebase app points outside the configured review project.');
     }
     await Firebase.initializeApp(options: options);
+    if (AppConfig.hostedTest) return;
     await FirebaseAuth.instance.useAuthEmulator(
         AppConfig.emulatorHost, AppConfig.authPort,
         automaticHostMapping: false);

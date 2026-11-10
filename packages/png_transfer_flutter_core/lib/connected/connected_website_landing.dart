@@ -7,11 +7,13 @@ class ConnectedWebsiteLanding extends StatelessWidget {
   final bool busy;
   final String? message;
   final VoidCallback onRetry;
+  final bool configured;
   const ConnectedWebsiteLanding(
       {super.key,
       required this.busy,
       required this.message,
-      required this.onRetry});
+      required this.onRetry,
+      this.configured = false});
 
   Widget workspace(
           String title, String description, IconData icon, double width) =>
@@ -91,7 +93,9 @@ class ConnectedWebsiteLanding extends StatelessWidget {
                                     Text(
                                         busy
                                             ? 'Checking online services'
-                                            : 'Online services awaiting configuration',
+                                            : configured
+                                                ? 'Online services temporarily unavailable'
+                                                : 'Online services awaiting configuration',
                                         style: const TextStyle(
                                             fontWeight: FontWeight.w700,
                                             fontSize: 17)),

@@ -32,6 +32,29 @@ void main() {
         isTrue);
   });
 
+  test(
+      'hosted test API requires HTTPS and cannot select the live Firebase project',
+      () {
+    expect(
+        AppConfig.normalizeRuntimeUrl('https://test-api.example.invalid',
+            'staging', AppConfig.stagingProjectId),
+        'https://test-api.example.invalid');
+    expect(
+        () => AppConfig.normalizeRuntimeUrl(
+            'https://test-api.example.invalid', 'staging', 'airport-png-c866b'),
+        throwsArgumentError);
+    expect(
+        () => AppConfig.normalizeRuntimeUrl(
+            'http://localhost:8080', 'staging', AppConfig.stagingProjectId),
+        throwsArgumentError);
+    expect(
+        () => AppConfig.normalizeRuntimeUrl(
+            'https://test-api.example.invalid/path',
+            'staging',
+            AppConfig.stagingProjectId),
+        throwsArgumentError);
+  });
+
   testWidgets(
       'public website opens without probing a visitor localhost or Firebase',
       (tester) async {

@@ -1,26 +1,25 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import * as admin from "firebase-admin";
-import {
-  localEnvironment,
-  requireEmulators,
-} from "../config/local-environment";
+import { requireEmulators } from "../config/local-environment";
+import { runtimeEnvironment } from "../config/runtime-environment";
 
 @Injectable()
 export class FirebaseService implements OnModuleInit, OnModuleDestroy {
   private app: admin.app.App;
 
   async onModuleInit() {
-    const config = localEnvironment();
-    await requireEmulators(config);
-    // Never initialize with ADC or a service account for this local-only batch.
-    // Auth/Firestore/RTDB/Storage SDKs all honor the validated emulator variables.
+    const config = runtimeEnvironment();
+    if (config.environment === "local") await requireEmulators(config);
     this.app = admin.initializeApp(
       {
         projectId: config.projectId,
         databaseURL: config.databaseURL,
         storageBucket: config.storageBucket,
+        ...(config.serviceAccount
+          ? { credential: admin.credential.cert(config.serviceAccount) }
+          : {}),
       },
-      "aerotrans-local-" + Date.now(),
+      "aerotrans-" + config.environment + "-" + Date.now(),
     );
     this.firestore.settings({ ignoreUndefinedProperties: true });
   }

@@ -54,6 +54,7 @@ class _ConnectedReviewBootstrapState extends State<ConnectedReviewBootstrap> {
     });
     try {
       if (website &&
+          !AppConfig.hostedTest &&
           !AppConfig.allowsLocalWebServices(widget.webOrigin ?? Uri.base)) {
         setState(() => error =
             'Online services are not configured for this website. Sign-in and bookings are currently unavailable.');
@@ -64,7 +65,7 @@ class _ConnectedReviewBootstrapState extends State<ConnectedReviewBootstrap> {
       if (mounted) setState(() => ready = true);
     } catch (_) {
       if (mounted) {
-        setState(() => error = website
+        setState(() => error = website || AppConfig.hostedTest
             ? 'The review services are unavailable. Sign-in and bookings will be available when the server connection is restored.'
             : 'The review server is unavailable. Keep this phone connected to the '
                 'review computer by USB and ask the operator to start the services. '
@@ -84,7 +85,10 @@ class _ConnectedReviewBootstrapState extends State<ConnectedReviewBootstrap> {
           theme: AviationTheme.lightTheme,
           home: website
               ? ConnectedWebsiteLanding(
-                  busy: busy, message: error, onRetry: connect)
+                  busy: busy,
+                  message: error,
+                  onRetry: connect,
+                  configured: AppConfig.hostedTest)
               : Scaffold(
                   appBar: AppBar(title: const Text('AeroTrans Connected')),
                   body: Center(
@@ -120,8 +124,10 @@ class _ConnectedReviewBootstrapState extends State<ConnectedReviewBootstrap> {
                                               const Text('Retry connection')),
                                     ],
                                     const SizedBox(height: 20),
-                                    const Text(
-                                        'Local backend review • Papua New Guinea\nAn APK alone does not provide remote server access.',
+                                    Text(
+                                        AppConfig.hostedTest
+                                            ? 'Isolated hosted test • Papua New Guinea'
+                                            : 'Local backend review • Papua New Guinea\nAn APK alone does not provide remote server access.',
                                         textAlign: TextAlign.center),
                                   ]))))));
 }
@@ -242,8 +248,10 @@ class _ConnectedReviewAppState extends State<ConnectedReviewApp> {
                     'Review activity, staff and vehicles'),
                 const SizedBox(height: 8),
                 const Text(
-                    'Connected local review • Keep USB connected to the review computer. '
-                    'Remote reviews require a hosted test environment.',
+                    AppConfig.hostedTest
+                        ? 'Hosted test environment • Test accounts and test fares only. No live payments.'
+                        : 'Connected local review • Keep USB connected to the review computer. '
+                            'Remote reviews require a hosted test environment.',
                     style: TextStyle(fontSize: 12)),
               ]))));
 

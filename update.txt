@@ -1,3 +1,37 @@
+HOSTED TEST FOUNDATION UPDATE - 10 NOVEMBER 2026
+This section supersedes older local-only hosting and authorization statements below.
+User approved creating a separate test environment. Do not modify the live project
+airport-png-c866b. New test Firebase project: aerotrans-png-test-7d7128, with a
+registered web app and Firestore in asia-southeast1 (deletion protection enabled).
+Separate Vercel API project created: aerotrans-png-test-api-7d7128, backend root,
+NestJS, Node 22. A project being created does not mean the API is deployed.
+
+Hosted-test runtime and public web build configuration are implemented. Existing
+local emulator rules and offline APKs remain intact. Hosted configuration currently
+supports WEB ONLY; existing connected APK remains local/USB, not a remote APK.
+The public frontend stays in preview until the hosted backend is verified.
+
+PENDING: standard Firebase Authentication console activation + Email/Password;
+specific approval to create a dedicated test service-account key and store it in
+Vercel's sensitive backend settings. Automatic approval review rejected that key
+operation because exporting the private credential needs specific authorization.
+The rejected script did not run. No private key has been created/uploaded by it.
+No billing upgrade or live Firebase change was performed.
+
+Verification: backend build passed; 39 backend tests, 48 shared Flutter tests,
+7 focused connected UI tests, 1 public-config security test and 2 local-isolation
+tests passed. Flutter analysis clean. Five offline-build-only tests were skipped
+under normal connected test flags. See AEROTRANS_PNG2_HOSTED_TEST_REPORT.md for
+final compilation/API test results and the exact remaining activation steps.
+
+Do not claim hosted login, online booking, provider payments or phone acceptance
+have passed. Finish test credentials/activation, deny-all client rules, API deploy,
+test accounts, four-role cloud acceptance, frontend deploy, and Android-specific
+Firebase registration before distributing a hosted APK. Keep legacy Git history
+out of the new publication repository; use the clean publication checkout.
+
+--- PRIOR HANDOFF (HISTORICAL WHERE SUPERSEDED) ---
+
 AEROTRANS PNG2 - CURRENT CONNECTED APP, WEBSITE AND SOURCE HANDOFF
 Updated: 10 November 2026
 

@@ -31,14 +31,24 @@ if [[ "$sdk_version" != "$flutter_version" ]]; then
 fi
 
 export PATH="$sdk_path/bin:$PATH"
+build_defines=(--dart-define=AEROTRANS_CONNECTED_REVIEW=true)
+if [[ -n "${AEROTRANS_PUBLIC_CONFIG:-}" ]]; then
+  config_path="$repo_root/.vercel/cache/public-web-defines.json"
+  node "$repo_root/scripts/prepare-web-config.mjs" "$config_path"
+  build_defines+=(--dart-define-from-file="$config_path")
+fi
 cd "$app_root"
 flutter pub get
 flutter build web --release --no-pub \
   --target lib/main_connected.dart \
-  --dart-define=AEROTRANS_CONNECTED_REVIEW=true \
+  "${build_defines[@]}" \
   --no-web-resources-cdn
 
 test -s "$app_root/build/web/index.html"
 test -s "$app_root/build/web/flutter_bootstrap.js"
 printf 'Flutter website generated at apps/passenger_web/build/web.\n'
-printf 'Connected login/bookings still require the separately configured hosted backend and Firebase test environment.\n'
+if [[ -n "${AEROTRANS_PUBLIC_CONFIG:-}" ]]; then
+  printf 'Hosted test configuration included; the browser will verify the matching API before sign-in.\n'
+else
+  printf 'Public preview mode: sign-in awaits hosted test configuration.\n'
+fi

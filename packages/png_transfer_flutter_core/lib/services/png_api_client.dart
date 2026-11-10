@@ -83,8 +83,11 @@ class PngApiClient {
       if (error is FormatException || error is TypeError) {
         throw ApiException('PARSE_ERROR', 'Unreadable API response.');
       }
-      throw ApiException('NETWORK_ERROR',
-          'Local API unavailable. Check backend and emulators.');
+      throw ApiException(
+          'NETWORK_ERROR',
+          AppConfig.hostedTest
+              ? 'The review API is unavailable. Check your connection and retry.'
+              : 'Local API unavailable. Check backend and emulators.');
     } finally {
       if (_testClient == null) client.close();
     }
