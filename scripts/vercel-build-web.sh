@@ -5,7 +5,9 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 app_root="$repo_root/apps/passenger_web"
 flutter_version="3.35.4"
-sdk_path="${FLUTTER_SDK_PATH:-$repo_root/.vercel/cache/flutter-$flutter_version}"
+# Keep SDK Git metadata outside Vercel's restored build cache: that cache can
+# retain SDK files with incomplete Git metadata pointing at the app checkout.
+sdk_path="${FLUTTER_SDK_PATH:-$repo_root/.vercel/flutter-$flutter_version}"
 
 export CI=true
 export FLUTTER_SUPPRESS_ANALYTICS=true
@@ -27,24 +29,7 @@ if [[ ! -x "$sdk_path/bin/flutter" ]]; then
     https://github.com/flutter/flutter.git "$sdk_path"
 fi
 
-# Vercel can restore SDK files while omitting nested .git directories. Restore
-# only the generated cache's metadata from the official pinned tag. Preserve the
-# cached engine/downloads and never rewrite a caller-supplied SDK.
-if [[ ! -d "$sdk_path/.git" && -z "${FLUTTER_SDK_PATH:-}" ]]; then
-  printf 'Restoring pinned Flutter SDK Git metadata in the generated cache.\n'
-  git init --quiet "$sdk_path"
-  git -C "$sdk_path" fetch --depth 1 https://github.com/flutter/flutter.git "refs/tags/$flutter_version:refs/tags/$flutter_version"
-  git -C "$sdk_path" reset --mixed --quiet "$flutter_version"
-fi
-
 sdk_version="$(git -C "$sdk_path" describe --tags --exact-match 2>/dev/null || true)"
-if [[ "$sdk_version" != "$flutter_version" && -z "${FLUTTER_SDK_PATH:-}" ]]; then
-  # Some caches retain .git/HEAD but prune its tag refs. Fetching this one tag
-  # repairs that metadata without changing the SDK working tree or its HEAD.
-  printf 'Restoring the pinned Flutter version tag in the generated SDK cache.\n'
-  git -C "$sdk_path" fetch --depth 1 https://github.com/flutter/flutter.git "refs/tags/$flutter_version:refs/tags/$flutter_version"
-  sdk_version="$(git -C "$sdk_path" describe --tags --exact-match || true)"
-fi
 if [[ "$sdk_version" != "$flutter_version" ]]; then
   printf 'Expected Flutter %s; the supplied SDK has tag %s.\n' "$flutter_version" "$sdk_version" >&2
   exit 1
