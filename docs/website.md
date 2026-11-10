@@ -1,0 +1,72 @@
+# PNG2 website: source, build and hosting
+
+The website source is included in https://github.com/vperalta-git/png-airport.
+The project is Flutter Web with a NestJS/Firebase backend.
+
+| Purpose | Repository path |
+| --- | --- |
+| Primary Flutter website project | apps/passenger_web |
+| Unified four-role website entrypoint | apps/passenger_web/lib/main_connected.dart |
+| Browser HTML loader and web manifest | apps/passenger_web/web |
+| Shared screens, design and API contracts | packages/png_transfer_flutter_core |
+| NestJS backend | backend |
+| Generated folder to host after building | apps/passenger_web/build/web |
+| Separate Control Room web entrypoint | apps/control_room_web |
+| Separate Manager/Supervisor web entrypoint | apps/admin_web |
+
+Use the unified entrypoint for one website containing all four account flows.
+Workspace choices open real sign-in; backend permissions determine which account
+workspace opens. They do not grant access by selecting a role.
+
+## Build the website
+
+Install a compatible Flutter SDK and resolve dependencies in apps/passenger_web:
+
+```sh
+cd apps/passenger_web
+flutter pub get
+flutter build web --target lib/main_connected.dart --dart-define=AEROTRANS_CONNECTED_REVIEW=true --no-web-resources-cdn
+```
+
+The output directory is **apps/passenger_web/build/web**, relative to the repository
+root. A static host serves that generated directory, not lib/ or the web/ loader
+templates. Build output is intentionally ignored by Git. The connected website
+compiled successfully with Flutter 3.35.4 during verification.
+
+The build environment must have Flutter installed. This repository is not a
+React/Next.js application, so a hosting service's default npm build is insufficient.
+For subdirectory hosting, configure the matching Flutter --base-href value when
+building. Use an SPA fallback to index.html for application routes.
+
+## Current backend limitation before public use
+
+The current build is an isolated local review application. Its configuration
+accepts only loopback backend/emulator hosts and intentionally refuses cloud
+fallback. Uploading the generated files does not create a working remote backend:
+the browser would try to contact services on the visitor's own computer.
+
+For a public, functional website the next deployment work must provide:
+
+- A nonproduction Firebase project with appropriate Auth domains and secure rules.
+- A hosted HTTPS NestJS backend using that same project's data and identity.
+- An explicit hosted frontend/backend configuration mode and matching CORS origins.
+- The selected hosting site's actual domain and build/deployment settings.
+
+Root firebase.json is currently emulator configuration. The historical hosting
+example under infrastructure requires confirmed site/service settings and is not
+an active deployment. No hosting or backend deployment was performed by the source
+push. Production credentials, private keys and local account passwords stay out
+of the repository and frontend build.
+
+## Run the connected website locally
+
+Follow connected-review.md to start the existing emulators and backend. Then, from
+apps/passenger_web:
+
+```sh
+flutter run -d chrome --target lib/main_connected.dart --dart-define=AEROTRANS_CONNECTED_REVIEW=true --web-port=5001
+```
+
+This uses the same server-generated quotes, reservations, dispatch, driver OTP and
+supervisor management as the connected app. See
+[connected-review.md](connected-review.md) for the walkthrough and current limits.

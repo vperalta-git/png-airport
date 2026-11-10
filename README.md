@@ -1,4 +1,17 @@
-# AeroTrans PNG2 - offline and connected Android demos
+# AeroTrans PNG2 - website and mobile applications
+
+## Website source
+
+The Flutter website is in **[apps/passenger_web](apps/passenger_web)**.
+For the unified Customer, Control Room, Driver and Manager/Supervisor website,
+use **[lib/main_connected.dart](apps/passenger_web/lib/main_connected.dart)**.
+The NestJS backend is in **[backend](backend)**.
+
+**[Website build and hosting guide](docs/website.md)** explains the build command,
+hosting output folder and backend configuration still needed for public access.
+This is a Flutter Web application; the repository root is not a static HTML site.
+
+## Connected and offline review applications
 
 The unified backend-connected review app is now available in source at
 **apps/passenger_web/lib/main_connected.dart**. It supports Customer, Control
