@@ -1,84 +1,114 @@
-# AeroTrans PNG2 hosted test foundation
+# AeroTrans PNG2 hosted test report
 
-Date: 10 November 2026.
+Updated: 10 November 2026. Architecture: NestJS / Firebase / Flutter.
 
-## Completed
+## Completed environment
 
-- Preserved NestJS/Firebase/Flutter, local emulator security and the separate
-  offline APK. No live Firebase configuration or operational data was changed.
-- Created approved isolated Firebase project `aerotrans-png-test-7d7128`, its web
-  application, and Firestore default database in `asia-southeast1` with deletion
-  protection. Auth and Firestore APIs are enabled; billing was not upgraded.
-- Created a separate Vercel NestJS API project, `aerotrans-png-test-api-7d7128`,
-  configured for the backend directory and Node 22. No API deployment is claimed.
-- Added a narrowly scoped hosted-test runtime. Other project IDs, the supplied
-  live project, mixed emulator settings and incorrect credentials fail validation.
-- Added explicit HTTPS CORS origins, runtime identity in health responses, and
-  server-only credential configuration without embedding keys in source.
-- Added public Flutter web compile configuration and validation. The client checks
-  backend identity before initializing Firebase. Local/public preview behavior
-  remains available when hosted configuration is absent.
-- Kept hosted web and native configuration separate. Existing APK files have not
-  been rebuilt or installed during this hosted-web task.
+- Firebase test project: `aerotrans-png-test-7d7128` (AeroTrans PNG Test).
+  The live project `airport-png-c866b` remains untouched.
+- Registered a web app, activated standard Email/Password Auth, and authorized the
+  website domain. No billing upgrade was enabled.
+- Firestore `(default)` is in `asia-southeast1`, with deletion protection and
+  deny-all direct-client rules. Operational access goes through NestJS.
+- After explicit user approval, created a dedicated test service account with
+  Firebase Authentication Admin and Cloud Datastore User roles only in this test
+  project. Its key is a sensitive variable in the separate Vercel API project.
+  The private key was not saved locally, printed or committed.
+- Deployed NestJS to https://aerotrans-png-test-api-7d7128.vercel.app using Node 22
+  and the backend directory. Public HTTPS health identifies the staging project.
+- Created four labelled test accounts and two test vehicles. Generated passwords
+  are in ignored `.local-tools/hosted-test/accounts.json`, never source.
+- Configured the existing frontend with public test SDK values and the verified
+  test API URL. Server credentials are excluded from the frontend.
+- Local emulator setup, offline APK and existing connected APK are preserved.
+  No new APK build, installation or native acceptance is claimed in this task.
 
-## Modified source
+## Source changes
 
-- `backend/src/config/runtime-environment.ts` and its focused specification
-- `backend/src/firebase/firebase.service.ts`
-- `backend/src/app.setup.ts`, `health.controller.ts`, `main.ts`
-- `backend/vercel.json`, `.env.staging.example`
-- `packages/png_transfer_flutter_core/lib/config/app_config.dart`, `local_firebase.dart`
-- `packages/png_transfer_flutter_core/lib/connected/connected_review_app.dart`,
-  `connected_website_landing.dart`
-- `packages/png_transfer_flutter_core/lib/services/png_api_client.dart`
-- `packages/png_transfer_flutter_core/test/connected_review_app_test.dart`
-- `scripts/prepare-web-config.mjs`, `public-web-config.test.mjs`, `vercel-build-web.sh`
-- `docs/hosted-test.md`, `docs/website.md`, this report and `update.txt`
+Explicit local/staging runtime validation rejects live IDs, conflicting credentials,
+mixed emulator/cloud configuration and unconfigured RTDB/Storage providers. Added
+HTTPS CORS and runtime identity in health responses. Flutter verifies backend
+identity before Firebase initialization; missing configuration retains the public
+preview, and failed services never create fake users or offline success.
 
-Provisioning metadata and SDK configuration remain ignored under `.local-tools`.
-No generated private key, login token or test password is included in publication.
+Fixed Vercel startup by removing an incompatible named entrypoint export. Repeated
+Flutter builds now use a pinned 3.35.4 SDK outside Vercel's restored cache, which
+had incomplete SDK Git metadata resolving to the app commit. Inherited Git checkout
+overrides are cleared. No replacement backend or runtime dependency was introduced.
 
-## Verification
+Added opt-in real API acceptance and optional Playwright browser acceptance. Tests
+read ignored account sheets; authentication tokens remain in memory.
 
-- `npm --prefix backend run build`: passed.
-- `npm --prefix backend test -- --silent`: 7 suites, 39 tests passed.
-- Shared Flutter package `flutter test --no-pub`: 48 passed, 5 offline-build-only
-  tests skipped under the normal connected test configuration.
-- `flutter analyze --no-pub`: no issues found.
-- Focused connected Flutter UI/startup regression: 7 passed after final safeguards.
-- `node --test scripts/public-web-config.test.mjs`: 1 passed.
-- `npm run test:isolation`: 2 passed. An initial sandbox child-process EPERM was
-  resolved by rerunning this check with the permitted execution profile.
-- `npm --prefix backend run test:e2e -- --silent`: 1 suite / 1 test passed.
-  This uses a mocked Firebase service and checks the actual Nest HTTP foundation;
-  it is not a cloud or four-role integration test.
-- Hosted-mode `flutter build web --release --no-pub --target
-  lib/main_connected.dart --dart-define=AEROTRANS_CONNECTED_REVIEW=true
-  --dart-define-from-file=<ignored-compile-fixture> --no-web-resources-cdn`:
-  passed in 60.6 seconds. The fixture uses a reserved `.invalid` API origin and
-  placeholder public SDK values, makes no service calls, and must not be deployed.
+Modified: backend/src/config/runtime-environment.ts and its specification;
+backend/src/firebase/firebase.service.ts; backend/src/app.setup.ts;
+backend/src/health.controller.ts; backend/src/main.ts; backend/vercel.json;
+.env.staging.example; shared Flutter lib/config/app_config.dart,
+lib/config/local_firebase.dart, lib/connected/connected_review_app.dart,
+lib/connected/connected_website_landing.dart, lib/services/png_api_client.dart,
+test/connected_review_app_test.dart; scripts/prepare-web-config.mjs,
+scripts/public-web-config.test.mjs, scripts/vercel-build-web.sh,
+scripts/test-hosted-review.mjs, scripts/test-hosted-web.mjs; README.md; docs/hosted-test.md;
+docs/website.md; update.txt; this report.
 
-## Remaining blockers
+Provisioning metadata, account sheets, generated SDK values and evidence remain
+ignored under .local-tools. Source publication uses the separate clean checkout;
+original repository history, index and origin are preserved.
 
-Standard Firebase Authentication needs console activation and Email/Password
-enablement in the **new test project**. An API initialization attempt returned
-`BILLING_NOT_ENABLED`; no billing upgrade was performed.
+## Actual verification
 
-Automatic approval review rejected executing the key provisioning/upload script:
-although test setup was authorized, transferring a private service-account key to
-Vercel requires specific authorization. The script did not execute, so no service
-account or key was created by that action. A user approval question is pending.
+- Backend build passed, including after the Vercel entrypoint fix.
+- Backend unit tests: 7 suites / 39 passed.
+- Nest HTTP foundation: 1 suite / 1 passed with mocked Firebase; not a cloud test.
+- Shared Flutter tests: 48 passed; 5 offline-build-only tests skipped with normal
+  connected flags. Focused connected regression after final safeguards: 7 passed.
+- Flutter analysis clean. Local hosted-mode release web compilation passed with
+  non-network fixtures, which were not deployed.
+- Public configuration security test: 1 passed. Local isolation tests: 2 passed.
+- Real hosted API acceptance passed: HTTPS identity and CORS; all four Firebase
+  sign-ins; customer registration; anonymous/role/ownership denials; authoritative
+  integer-PGK quotes; idempotent booking; manual assignment and availability;
+  driver acceptance/progress; wrong and replayed OTP rejection; completed trip
+  history; cancellation; supervisor summary, users and audit responses.
+- A completed trip retained payment PENDING. No successful provider transaction
+  was simulated. Acceptance registration/bookings are labelled test records.
+- Real signed-in customer direct Firestore read denied (403); unapproved browser
+  origin received no CORS permission.
+- Vercel website deployment READY at https://png-airport-kappa.vercel.app.
+  The hosted Flutter release compiled in 51.4 seconds; total build was about
+  two minutes. Verified alias: png-airport-kappa.vercel.app.
+- Real Edge browser acceptance: 5 cases passed (four roles at 1440px and Customer
+  at 390px), covering Firebase login, server-authorized workspace, all required
+  workspace API reads and account switching. Supervisor management loaded users;
+  a Driver selecting the Supervisor card still received the Driver workspace.
+  No browser runtime errors or localhost/live-project requests were observed.
+  These browser checks do not claim every booking action was clicked through;
+  the full booking-to-completion workflow was exercised by the real API test.
+- Deployment audit passed: only public configuration on the frontend; the private
+  key is a sensitive, production-target variable in the separate test API project.
+  No private-key marker or test service-account email appeared in public app JS.
+- Evidence: ignored .local-tools/hosted-test/api-acceptance.json,
+  isolation-acceptance.json, deployment-audit.json and browser/results.json.
+  Browser screenshots were visually reviewed for phone layout and management.
 
-API deployment, backend credentials, test account/fleet provisioning, public
-frontend activation and remote four-role acceptance remain incomplete. The current
-hosted website is intentionally kept in preview until these checks can be completed.
-No cloud authentication, real-device, production or payment-provider test passed
-during this task, and none is claimed.
+## Remaining limits and next phase
 
-## Recommended next step
+Hosted Android needs a registered Android test app, matching native SDK settings,
+a fresh APK build and physical-phone acceptance. Hosted configuration currently
+supports web only; existing APKs retain their local/USB backend configuration.
 
-Complete the two pending setup actions, deploy the isolated backend, and verify
-customer quote/booking, dispatch assignment, driver OTP/trip progress, supervisor
-activity and role/scope denial using separate test accounts. Configure and deploy
-the frontend only after backend readiness. Then register the Android test app and
-build a separately labelled hosted test APK using that same verified backend.
+Commercial fares still need operator approval. Only labelled test rates are enabled.
+Payments, provider notifications, RTDB tracking and Storage uploads are not active
+integrations. No production, provider or device test is claimed.
+
+The Vercel install reported existing npm advisories. Review dependency updates
+separately; no forced or broad upgrade was attempted. Production readiness also
+needs approved scope/rules, recovery/invitation policy, abuse protection, monitoring
+and retention decisions.
+
+The pinned Flutter renderer omitted bottom-navigation labels from the browser
+semantics tree. The Supervisor browser check used its visible mouse target;
+screen-reader accessibility still needs review.
+
+Next: supervisor website acceptance using four test accounts, then one hosted-test
+Android APK connected to this same verified backend. Keep the live project separate
+until its data model and production rollout are reviewed and explicitly approved.

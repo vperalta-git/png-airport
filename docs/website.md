@@ -3,11 +3,11 @@
 The website source is included in https://github.com/vperalta-git/png-airport.
 The project is Flutter Web with a NestJS/Firebase backend.
 
-Hosted-test update, 10 November 2026: an isolated Firebase test project and separate
-Vercel API project now exist. Runtime support is implemented, but authentication
-activation, dedicated credential approval and deployment acceptance are pending.
-See [hosted-test.md](hosted-test.md) for the current setup and safety boundaries.
-The website remains a preview until that setup is verified.
+Hosted-test update, 10 November 2026: isolated Firebase Auth/Firestore and the
+separate NestJS API are configured. Real four-role API acceptance passed. Current
+website deployment/browser results are in AEROTRANS_PNG2_HOSTED_TEST_REPORT.md.
+See [hosted-test.md](hosted-test.md) for setup, test access and safety boundaries.
+Older local-only descriptions below apply to builds without hosted configuration.
 
 | Purpose | Repository path |
 | --- | --- |

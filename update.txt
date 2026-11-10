@@ -1,3 +1,62 @@
+AEROTRANS PNG2 - ONLINE TEST ENVIRONMENT HANDOFF
+Updated: 10 November 2026
+This section supersedes older pending-approval, local-only and preview-only notes.
+
+WEBSITE: https://png-airport-kappa.vercel.app
+BACKEND: https://aerotrans-png-test-api-7d7128.vercel.app
+FIREBASE TEST PROJECT: aerotrans-png-test-7d7128 (AeroTrans PNG Test)
+LIVE PROJECT airport-png-c866b REMAINS UNCHANGED.
+
+User completed standard Firebase Email/Password activation and specifically
+approved creating the dedicated test service-account key and storing it as a
+sensitive variable in the separate Vercel test backend. Both steps are complete.
+No private key was saved locally, printed, committed or included in frontend code.
+No billing upgrade was enabled.
+
+The existing NestJS/Firebase/Flutter architecture is preserved. Firestore is
+persistent in asia-southeast1 with deletion protection. Direct-client rules deny
+access; NestJS enforces identity, role, organization, branch, airport and ownership.
+Local scripts remain pinned to four loopback emulators and demo-aerotrans-png2.
+The online runtime accepts only the separately approved test project.
+
+Real hosted four-role API acceptance PASSED: Firebase login for Customer,
+Control Room, Driver and Supervisor; customer registration; role/ownership denials;
+server quotes and PGK integer minor units; retry-safe booking; manual dispatch;
+driver inspection/acceptance and progress; backend OTP checks including invalid
+and replayed codes; completion/history; cancellation; supervisor users, summaries
+and audit. Completing a trip leaves payment PENDING. No payment was simulated.
+Test registrations/bookings are explicitly labelled and remain only in TEST data.
+Signed-in direct Firestore reads were denied (403), and unapproved browser origins
+received no CORS access.
+
+The connected website deployed successfully with real public test SDK values and
+the verified HTTPS backend. A fresh pinned Flutter SDK outside Vercel's restored
+cache fixes repeated builds; the existing NestJS entrypoint is Vercel-compatible.
+Browser acceptance PASSED: all four desktop roles plus Customer at phone width; real login, authorized workspace, required API reads, Supervisor management, and account switching. Driver choosing the Supervisor card still received Driver access. No browser runtime errors or localhost/live-project calls occurred. Full trip flow was API-tested; not every booking action was clicked through in the browser. See AEROTRANS_PNG2_HOSTED_TEST_REPORT.md for evidence.
+
+Four test accounts and two test vehicles are ready. Private tester access sheet:
+.local-tools/hosted-test/TEST_ACCESS.txt (ignored, share privately with testers).
+DO NOT paste private keys, tokens or generated account passwords into GPT handoffs
+or Git. This handoff intentionally contains none of those credentials.
+
+IMPORTANT APK LIMIT: existing offline APK is retained. Existing connected APK is
+still local/USB. Hosted configuration currently supports WEB ONLY. Next register
+and configure the Android TEST app, build one hosted-test APK and perform real-phone
+acceptance. No new APK installation is claimed by this online website work.
+
+Commercial fares require operator approval. Only labelled test fares are enabled.
+Payment providers, notifications, RTDB tracking and Storage uploads are not active.
+No production data or provider test was performed. Review dependency advisories,
+account recovery/invitations, abuse protection and monitoring before production.
+
+Source repository: https://github.com/vperalta-git/png-airport
+Publish only through the clean publication checkout; preserve the original legacy
+history, index and origin. Never push the older project history into this repository.
+See docs/hosted-test.md and AEROTRANS_PNG2_HOSTED_TEST_REPORT.md for reproducible
+commands, modified source and actual verification. Earlier text below is historical.
+
+--- PREVIOUS HANDOFFS (SUPERSEDED WHERE INCONSISTENT) ---
+
 HOSTED TEST FOUNDATION UPDATE - 10 NOVEMBER 2026
 This section supersedes older local-only hosting and authorization statements below.
 User approved creating a separate test environment. Do not modify the live project

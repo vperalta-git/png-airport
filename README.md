@@ -8,11 +8,18 @@ use **[lib/main_connected.dart](apps/passenger_web/lib/main_connected.dart)**.
 The NestJS backend is in **[backend](backend)**.
 
 **[Website build and hosting guide](docs/website.md)** explains the build command,
-hosting output folder and backend configuration still needed for public access.
+hosting output folder and backend configuration.
 This is a Flutter Web application; the repository root is not a static HTML site.
 For Vercel, import the **repository root**, choose **Other**, and use the included
 **vercel.json**. The build script installs the pinned Flutter SDK and builds
 `apps/passenger_web/build/web`. Selecting `backend` imports the API instead.
+
+The connected test website is **https://png-airport-kappa.vercel.app**, using the
+separate Firebase test project `aerotrans-png-test-7d7128` and the hosted NestJS API.
+The supplied live Firebase project remains untouched. See
+**[hosted test setup and access](docs/hosted-test.md)** and the
+**[verification report](AEROTRANS_PNG2_HOSTED_TEST_REPORT.md)**. Test passwords and
+server credentials are excluded from this repository.
 
 ## Connected and offline review applications
 
@@ -23,10 +30,10 @@ backend-authorized workspaces. See **[docs/connected-review.md](docs/connected-r
 Build the single APK with `npm run demo:connected:android`, or update a connected
 phone with `npm run demo:connected:phone -- -DeviceSerial <serial>`.
 
-This repository contains source, not deployed services or APK binaries. The current
-connected runtime uses local NestJS/Firebase emulators and USB forwarding. Remote
-supervisor access still requires a separately configured hosted test environment.
-The standalone offline APK remains a separate mode.
+This repository contains source; APK binaries are excluded. The connected website
+supports remote test access. Existing connected APK binaries still use local
+NestJS/Firebase emulators and USB forwarding; hosted Android configuration and
+phone acceptance remain pending. The standalone offline APK remains a separate mode.
 
 To compile the unified website from `apps/passenger_web`, use:
 
