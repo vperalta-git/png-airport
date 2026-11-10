@@ -1,4 +1,5 @@
 param(
+    [switch]$Hosted,
     [switch]$Install,
     [ValidatePattern('^[A-Za-z0-9_.:-]+$')]
     [string]$DeviceSerial
@@ -7,13 +8,39 @@ param(
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $appPath = Join-Path $projectRoot 'apps\passenger_web'
-$deliveryPath = Join-Path $projectRoot '.local-tools\connected\apks'
+$deliveryPath = Join-Path $projectRoot $(if ($Hosted) { '.local-tools\hosted-test\apks' } else { '.local-tools\connected\apks' })
 $visibleDeliveryPath = Join-Path $projectRoot 'Android APKs'
-$apkName = 'aerotrans-all-roles-connected.apk'
+$apkName = if ($Hosted) { 'aerotrans-all-roles-online.apk' } else { 'aerotrans-all-roles-connected.apk' }
 $expectedPackage = 'com.pngtransfer.png_transfer_client.connected'
 $activityComponent = $expectedPackage + '/com.pngtransfer.png_transfer_client.MainActivity'
 $localProject = 'demo-aerotrans-png2'
-$guidePath = Join-Path $projectRoot 'docs\connected-review.md'
+$guidePath = Join-Path $projectRoot $(if ($Hosted) { 'docs\online-android.md' } else { 'docs\connected-review.md' })
+$versionCode = if ($Hosted) { 4 } else { 3 }
+$versionName = if ($Hosted) { '1.2.0' } else { '1.1.0' }
+$runtimeProject = if ($Hosted) { 'aerotrans-png-test-7d7128' } else { $localProject }
+$backendOrigin = if ($Hosted) { 'https://aerotrans-png-test-api-7d7128.vercel.app' } else { 'http://127.0.0.1:8080' }
+$definesPath = Join-Path $projectRoot '.local-tools\hosted-test\android-defines.json'
+
+function Assert-HostedServicesReady {
+    $request = [Net.HttpWebRequest]::Create($backendOrigin + '/api/v1/health')
+    $request.AllowAutoRedirect = $false
+    $request.Timeout = 20000
+    $response = $null
+    $reader = $null
+    try {
+        $response = $request.GetResponse()
+        $reader = New-Object IO.StreamReader($response.GetResponseStream())
+        $health = $reader.ReadToEnd() | ConvertFrom-Json
+        if ([int]$response.StatusCode -ne 200 -or $health.success -ne $true -or $health.schemaVersion -ne '1' -or $health.data.status -ne 'UP' -or $health.data.environment -ne 'staging' -or $health.data.projectId -ne $runtimeProject -or $health.data.operationalWorkflowsEnabled -ne $true) { throw 'Unexpected hosted backend identity.' }
+    } finally { if ($null -ne $reader) { $reader.Dispose() }; if ($null -ne $response) { $response.Dispose() } }
+    Write-Output 'PASS hosted HTTPS backend identity matches the approved isolated test project.'
+}
+
+if ($Hosted) {
+    Assert-HostedServicesReady
+    & node (Join-Path $PSScriptRoot 'prepare-android-config.mjs') (Join-Path $projectRoot '.local-tools\hosted-test\firebase-android.json') $definesPath
+    if ($LASTEXITCODE -ne 0) { throw 'Native Android Firebase test configuration is missing or invalid.' }
+}
 
 function Assert-LocalServicesReady {
     # Numeric loopback, no proxy and no redirects: readiness checks cannot leave
@@ -79,6 +106,7 @@ $sourceFiles = @(
 $sourceRows = foreach ($file in ($sourceFiles | Sort-Object FullName -Unique)) {
     $file.FullName.Substring($projectRoot.Length) + (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash
 }
+if ($Hosted) { $sourceRows += 'native-test-defines:' + (Get-FileHash -LiteralPath $definesPath -Algorithm SHA256).Hash }
 $sha = [Security.Cryptography.SHA256]::Create()
 try {
     $fingerprint = ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes(($sourceRows -join [Environment]::NewLine))))).Replace('-', '').ToLowerInvariant()
@@ -86,7 +114,9 @@ try {
 
 Push-Location -LiteralPath $appPath
 try {
-    flutter build apk --release --no-pub --target lib/main_connected.dart --target-platform android-arm,android-arm64 --build-name=1.1.0 --build-number=3 --dart-define=AEROTRANS_ENV=local --dart-define=EMULATOR_HOST=127.0.0.1 --dart-define=AEROTRANS_CONNECTED_REVIEW=true --dart-define=DEMO_SOURCE_REVISION=$fingerprint
+    $flutterArguments = @('build','apk','--release','--no-pub','--target','lib/main_connected.dart','--target-platform','android-arm,android-arm64',"--build-name=$versionName", "--build-number=$versionCode",'--dart-define=AEROTRANS_CONNECTED_REVIEW=true',"--dart-define=DEMO_SOURCE_REVISION=$fingerprint")
+    if ($Hosted) { $flutterArguments += "--dart-define-from-file=$definesPath" } else { $flutterArguments += @('--dart-define=AEROTRANS_ENV=local','--dart-define=EMULATOR_HOST=127.0.0.1') }
+    & flutter @flutterArguments
     if ($LASTEXITCODE -ne 0) { throw 'Connected all-roles Android build failed.' }
     $sourceApk = (Resolve-Path -LiteralPath 'build\app\outputs\flutter-apk\app-release.apk').Path
 } finally { Pop-Location }
@@ -98,7 +128,7 @@ $aaptPath = Join-Path $buildTools.FullName 'aapt.exe'
 $apksignerPath = Join-Path $buildTools.FullName 'apksigner.bat'
 $badging = (& $aaptPath dump badging $sourceApk) -join [Environment]::NewLine
 if ($LASTEXITCODE -ne 0 -or !$badging.Contains("package: name='" + $expectedPackage + "'") -or
-    !$badging.Contains("versionCode='3'") -or !$badging.Contains("versionName='1.1.0'") -or
+    !$badging.Contains("versionCode='" + $versionCode + "'") -or !$badging.Contains("versionName='" + $versionName + "'") -or
     !$badging.Contains("application-label:'AeroTrans Connected'")) {
     throw 'Connected APK identity, launcher label or version did not match the isolated build. Nothing was exported.'
 }
@@ -112,16 +142,18 @@ $resourceTable = (& $aaptPath dump --values resources $sourceApk) -join [Environ
 if ($LASTEXITCODE -ne 0) { throw 'Could not inspect connected APK resources.' }
 # Android release packaging may shorten res/xml names. Resolve the policy from
 # its resource table and require the manifest to reference that same resource.
-$policyResource = [regex]::Match($resourceTable, 'resource\s+(0x[0-9a-fA-F]+)\s+\S+:xml/connected_network_security_config:[^\r\n]*\r?\n\s+\(string8\)\s+"([^"]+)"')
+$policyName = if ($Hosted) { 'hosted_network_security_config' } else { 'connected_network_security_config' }
+$policyResource = [regex]::Match($resourceTable, ('resource\s+(0x[0-9a-fA-F]+)\s+\S+:xml/' + $policyName + ':[^\r\n]*\r?\n\s+\(string8\)\s+"([^"]+)"'))
 if (!$policyResource.Success -or $androidManifest -notmatch ('networkSecurityConfig[^\r\n]*@' + [regex]::Escape($policyResource.Groups[1].Value))) {
     throw 'The connected manifest does not reference the expected network policy.'
 }
 $networkConfig = (& $aaptPath dump xmltree $sourceApk $policyResource.Groups[2].Value) -join [Environment]::NewLine
 if ($LASTEXITCODE -ne 0 -or $networkConfig -notmatch 'base-config' -or
-    $networkConfig -notmatch 'cleartextTrafficPermitted.*0x0' -or
-    $networkConfig -notmatch '127\.0\.0\.1') {
-    throw 'Connected APK is missing the loopback-only cleartext network policy.'
+    $networkConfig -notmatch 'cleartextTrafficPermitted.*0x0') {
+    throw 'Connected APK is missing its secure base network policy.'
 }
+if ($Hosted -and $networkConfig -match 'domain-config') { throw 'Hosted APK must not allow any cleartext exceptions.' }
+if (!$Hosted -and $networkConfig -notmatch '127\.0\.0\.1') { throw 'Local connected APK is missing its loopback policy.' }
 if ($resourceTable -match 'string/(google_api_key|google_app_id|gcm_defaultSenderId|firebase_database_url|google_storage_bucket|default_web_client_id)\b') {
     throw 'Cached Google Services configuration was found in the connected APK. Clean this app build and retry; isolated explicit Firebase options are required.'
 }
@@ -158,14 +190,17 @@ Copy-Item -LiteralPath $canonicalApk -Destination $visibleApk -Force
 $apkFile = Get-Item -LiteralPath $visibleApk
 $deliveryManifest = @{
     sourceRevision = $fingerprint
-    mode = 'ISOLATED CONNECTED ALL-ROLES REVIEW'
+    mode = if ($Hosted) { 'ISOLATED HOSTED ALL-ROLES TEST' } else { 'ISOLATED CONNECTED ALL-ROLES REVIEW' }
     packageId = $expectedPackage
-    versionCode = 3
-    versionName = '1.1.0'
-    projectId = $localProject
-    backendOrigin = 'http://127.0.0.1:8080'
+    versionCode = $versionCode
+    versionName = $versionName
+    projectId = $runtimeProject
+    backendOrigin = $backendOrigin
     backendRequired = $true
-    usbReverseRequired = $true
+    usbReverseRequired = !$Hosted
+    localComputerRequired = !$Hosted
+    firebasePlatform = if ($Hosted) { 'android' } else { 'local emulators' }
+    workflows = @('ARRIVALS', 'DEPARTURES')
     firebaseAutoInitialization = $false
     nativeRegistrationPackaged = $true
     roles = @('PASSENGER', 'DISPATCHER', 'DRIVER', 'SUPERVISOR')
@@ -177,14 +212,14 @@ $deliveryManifest = @{
 }
 $manifestPath = Join-Path $deliveryPath 'manifest.json'
 $deliveryManifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
-Copy-Item -LiteralPath $manifestPath -Destination (Join-Path $visibleDeliveryPath 'aerotrans-all-roles-connected.manifest.json') -Force
+Copy-Item -LiteralPath $manifestPath -Destination (Join-Path $visibleDeliveryPath ([IO.Path]::GetFileNameWithoutExtension($apkName) + '.manifest.json')) -Force
 Copy-Item -LiteralPath $guidePath -Destination (Join-Path $deliveryPath 'TESTER-README.txt') -Force
-Copy-Item -LiteralPath $guidePath -Destination (Join-Path $visibleDeliveryPath 'AeroTrans-Connected-TESTER-README.txt') -Force
+Copy-Item -LiteralPath $guidePath -Destination (Join-Path $visibleDeliveryPath $(if ($Hosted) { 'AeroTrans-Online-TESTER-README.txt' } else { 'AeroTrans-Connected-TESTER-README.txt' })) -Force
 Write-Output 'PASS connected identity, signature, native registration, explicit Firebase setup and restricted cleartext networking.'
 $apkFile | Select-Object FullName, Length
 
 if ($Install) {
-    Assert-LocalServicesReady
+    if ($Hosted) { Assert-HostedServicesReady } else { Assert-LocalServicesReady }
     $adbPath = Join-Path $sdkRoot 'platform-tools\adb.exe'
     if (!(Test-Path -LiteralPath $adbPath)) { throw ('ADB not found: ' + $adbPath) }
     $deviceOutput = & $adbPath devices
@@ -203,7 +238,7 @@ if ($Install) {
     if ($selected[0].State -eq 'unauthorized') { throw 'Phone is unauthorized. Unlock it and approve the USB debugging prompt.' }
     if ($selected[0].State -ne 'device') { throw 'Phone is offline. Reconnect USB and retry.' }
     $selectedSerial = $selected[0].Serial
-    foreach ($port in @(8080, 9099, 8085, 9000, 9199)) {
+    foreach ($port in $(if ($Hosted) { @() } else { @(8080, 9099, 8085, 9000, 9199) })) {
         & $adbPath -s $selectedSerial reverse ('tcp:' + $port) ('tcp:' + $port)
         if ($LASTEXITCODE -ne 0) { throw ('Could not reverse local development port ' + $port + ' to the phone.') }
     }
@@ -213,5 +248,5 @@ if ($Install) {
     $launchExitCode = $LASTEXITCODE
     $launchOutput
     if ($launchExitCode -ne 0 -or ($launchOutput -join [Environment]::NewLine) -notmatch 'Status: ok') { throw 'Connected APK installed, but Android did not confirm launcher startup.' }
-    Write-Output 'Connected APK installed and native activity launched. Keep USB and the local services running. Offline APKs/data were not modified.'
+    Write-Output $(if ($Hosted) { 'Online APK installed and launched. Internet is required; USB forwarding and local services are not required.' } else { 'Connected APK installed and native activity launched. Keep USB and the local services running. Offline APKs/data were not modified.' })
 }

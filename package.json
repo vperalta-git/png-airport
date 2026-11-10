@@ -5,6 +5,9 @@
     "node": ">=20 <25"
   },
   "scripts": {
+    "demo:online:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-connected.ps1 -Hosted",
+    "demo:online:phone": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-connected.ps1 -Hosted -Install",
+    "test:android-config": "node --test scripts/android-config.test.mjs",
     "demo:connected:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-connected.ps1",
     "demo:connected:phone": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-connected.ps1 -Install",
     "demo:all-roles:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-all-roles.ps1",

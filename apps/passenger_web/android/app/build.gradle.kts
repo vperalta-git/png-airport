@@ -18,6 +18,9 @@ val connectedReview = (project.findProperty("dart-defines") as? String)
     ?.split(",")
     ?.any { encoded -> String(Base64.getDecoder().decode(encoded), Charsets.UTF_8) == "AEROTRANS_CONNECTED_REVIEW=true" } == true
 require(!(offlineDemo && connectedReview)) { "Connected review and offline demo flags cannot be combined." }
+val hostedReview = connectedReview && (project.findProperty("dart-defines") as? String)
+    ?.split(",")
+    ?.any { encoded -> String(Base64.getDecoder().decode(encoded), Charsets.UTF_8) == "AEROTRANS_ENV=staging" } == true
 
 // Explicit-options builds must not add Google Services generated resources at
 // all: merely skipping its task can still package stale output from another mode.
@@ -91,6 +94,6 @@ if (offlineDemo) {
 } else if (connectedReview) {
     // Firebase is initialized explicitly with the isolated demo project options.
     // HTTP exceptions exist only for the known local emulator hosts.
-    android.sourceSets.getByName("release").manifest.srcFile("src/connected/AndroidManifest.xml")
-    android.sourceSets.getByName("release").res.srcDir("src/connected/res")
+    android.sourceSets.getByName("release").manifest.srcFile(if (hostedReview) "src/hosted/AndroidManifest.xml" else "src/connected/AndroidManifest.xml")
+    android.sourceSets.getByName("release").res.srcDir(if (hostedReview) "src/hosted/res" else "src/connected/res")
 }

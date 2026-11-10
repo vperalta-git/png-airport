@@ -1,3 +1,49 @@
+AEROTRANS PNG2 - ONLINE ANDROID APK READY
+Updated: 10 November 2026. Supersedes older WEB ONLY / local APK limitation notes.
+
+DELIVERABLE: Android APKs/aerotrans-all-roles-online.apk
+Launcher: AeroTrans Connected. Version 1.2.0, build 4.
+Package: com.pngtransfer.png_transfer_client.connected.
+Size: 40,253,883 bytes; ARM32 + ARM64 in one APK.
+SHA256: 04e0e19380e2dcfafed6938a7a124d42e81e7625e85c7986481bfe5d03d5557e
+
+This is now the online APK, connected to the SAME hosted test backend and persistent
+Firestore as the website. Internet required; local PC/emulators/USB forwarding are
+not needed. It contains Customer, Control Room, Driver and Supervisor, with separate
+Arrivals and Departures. Backend roles, quotes, OTP and resource locks are retained.
+
+Registered Android app in Firebase TEST project aerotrans-png-test-7d7128 with
+native Android SDK identity. Live airport-png-c866b unchanged. Public SDK config
+remains ignored locally. No Admin private key or account password is in the APK.
+The native build uses HTTPS only and verifies backend identity before initialization.
+The previous offline and local connected APK files remain preserved.
+
+Verification: Android release build passed; signature matches old connected APK;
+version/package, ARM libraries, native Firebase Auth/SharedPreferences registration,
+no automatic Firebase initialization and secure network policy checked. Both ARM
+binaries contain the intended native test app/project/API and no generated test
+passwords or private-key markers. 53 Flutter tests passed; analysis clean; 2 public
+configuration tests passed. Real REST login and backend authorization using the
+Android SDK key passed for all four accounts. This is not a physical-device test.
+
+DEVICE STATUS: ADB sees no attached phone. No installation, native startup or
+physical-phone acceptance is claimed. Connect an unlocked/authorized phone for
+installation, or sideload the APK. Do not uninstall/clear existing app data.
+
+BUILD: npm run demo:online:android
+BUILD + INSTALL: npm run demo:online:phone
+Private test logins: .local-tools/hosted-test/TEST_ACCESS.txt (share privately).
+Guide: docs/online-android.md
+Report: AEROTRANS_PNG2_ONLINE_ANDROID_REPORT.md
+
+Existing no-Hosted connected build commands still produce the local/USB variant.
+Store signing, device acceptance and live provider integrations remain future work.
+Only labelled test fares are enabled; trip completion does not verify payment.
+Retain NestJS/Firebase/Flutter and the clean source-publication workflow. No secrets,
+APKs or legacy history should be pushed to the source repository.
+
+--- HISTORICAL HANDOFFS (SUPERSEDED WHERE INCONSISTENT) ---
+
 AEROTRANS PNG2 - SEPARATE ARRIVALS AND DEPARTURES
 Updated: 10 November 2026. This section supersedes the older combined-flow notes.
 

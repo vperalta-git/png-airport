@@ -27,6 +27,14 @@ pickup verification. See [arrivals/departures guide](docs/arrivals-departures.md
 
 ## Connected and offline review applications
 
+The shareable **online Android APK** is now built as
+`Android APKs/aerotrans-all-roles-online.apk` (AeroTrans Connected 1.2.0, build 4).
+It uses the hosted test backend, contains all four roles and separate Arrivals /
+Departures, and needs internet without USB forwarding. Build with
+`npm run demo:online:android`, or build/install with `npm run demo:online:phone`.
+See [online Android guide](docs/online-android.md) and
+[actual verification report](AEROTRANS_PNG2_ONLINE_ANDROID_REPORT.md).
+
 The unified backend-connected review app is now available in source at
 **apps/passenger_web/lib/main_connected.dart**. It supports Customer, Control
 Room, Driver and Manager/Supervisor in one app, using Firebase authentication and
@@ -35,9 +43,9 @@ Build the single APK with `npm run demo:connected:android`, or update a connecte
 phone with `npm run demo:connected:phone -- -DeviceSerial <serial>`.
 
 This repository contains source; APK binaries are excluded. The connected website
-supports remote test access. Existing connected APK binaries still use local
-NestJS/Firebase emulators and USB forwarding; hosted Android configuration and
-phone acceptance remain pending. The standalone offline APK remains a separate mode.
+and new online APK support remote test access. The older local connected APK uses
+NestJS/Firebase emulators and USB forwarding. Physical-device acceptance of the new
+online APK is pending because no phone was attached. The offline APK is separate.
 
 To compile the unified website from `apps/passenger_web`, use:
 

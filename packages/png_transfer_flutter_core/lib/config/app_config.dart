@@ -10,6 +10,12 @@ class AppConfig {
       String.fromEnvironment('EMULATOR_HOST', defaultValue: '127.0.0.1');
   static const _overrideUrl = String.fromEnvironment('API_BASE_URL');
   static const hostedTest = environment == 'staging';
+  static const firebaseClientPlatform =
+      String.fromEnvironment('FIREBASE_CLIENT_PLATFORM', defaultValue: 'web');
+  static const firebaseAndroidApiKey =
+      String.fromEnvironment('FIREBASE_ANDROID_API_KEY');
+  static const firebaseAndroidAppId =
+      String.fromEnvironment('FIREBASE_ANDROID_APP_ID');
   static const firebaseWebApiKey =
       String.fromEnvironment('FIREBASE_WEB_API_KEY');
   static const firebaseWebAppId = String.fromEnvironment('FIREBASE_WEB_APP_ID');
@@ -17,6 +23,12 @@ class AppConfig {
       String.fromEnvironment('FIREBASE_AUTH_DOMAIN');
   static const firebaseSenderId =
       String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
+  static const firebaseApiKey = firebaseClientPlatform == 'android'
+      ? firebaseAndroidApiKey
+      : firebaseWebApiKey;
+  static const firebaseAppId = firebaseClientPlatform == 'android'
+      ? firebaseAndroidAppId
+      : firebaseWebAppId;
   static String apiBaseUrl =
       _overrideUrl.isEmpty ? 'http://$emulatorHost:8080' : _overrideUrl;
   static const authPort = 9099;
@@ -31,14 +43,13 @@ class AppConfig {
 
   static void validate() {
     if (hostedTest) {
-      if (projectId != stagingProjectId ||
-          firebaseWebApiKey.isEmpty ||
-          firebaseSenderId.isEmpty ||
-          !firebaseWebAppId.startsWith('1:$firebaseSenderId:web:') ||
-          firebaseAuthDomain != '$stagingProjectId.firebaseapp.com') {
-        throw StateError(
-            'Complete public Firebase configuration for the approved test project is required.');
-      }
+      validateHostedFirebase(
+          project: projectId,
+          platform: firebaseClientPlatform,
+          apiKey: firebaseApiKey,
+          appId: firebaseAppId,
+          senderId: firebaseSenderId,
+          authDomain: firebaseAuthDomain);
       normalizeUrl(apiBaseUrl);
       return;
     }
@@ -51,6 +62,27 @@ class AppConfig {
           'EMULATOR_HOST must be loopback or the Android emulator host alias.');
     }
     normalizeUrl(apiBaseUrl);
+  }
+
+  static void validateHostedFirebase(
+      {required String project,
+      required String platform,
+      required String apiKey,
+      required String appId,
+      required String senderId,
+      required String authDomain}) {
+    if (project != stagingProjectId ||
+        !['web', 'android'].contains(platform) ||
+        apiKey.isEmpty ||
+        apiKey.contains('PRIVATE KEY') ||
+        !RegExp(r'^\d+$').hasMatch(senderId) ||
+        !appId.startsWith('1:$senderId:$platform:') ||
+        appId.split(':').last.isEmpty ||
+        (platform == 'web' &&
+            authDomain != '$stagingProjectId.firebaseapp.com')) {
+      throw StateError(
+          'Complete platform-specific Firebase configuration for the approved test project is required.');
+    }
   }
 
   static String normalizeUrl(String url) =>

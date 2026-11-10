@@ -27,11 +27,13 @@ Future<void> runLocalFoundation(String role) async {
 class LocalFirebase {
   static FirebaseOptions get options => AppConfig.hostedTest
       ? const FirebaseOptions(
-          apiKey: AppConfig.firebaseWebApiKey,
-          appId: AppConfig.firebaseWebAppId,
+          apiKey: AppConfig.firebaseApiKey,
+          appId: AppConfig.firebaseAppId,
           messagingSenderId: AppConfig.firebaseSenderId,
           projectId: AppConfig.projectId,
-          authDomain: AppConfig.firebaseAuthDomain)
+          authDomain: AppConfig.firebaseClientPlatform == 'web'
+              ? AppConfig.firebaseAuthDomain
+              : null)
       : FirebaseOptions(
           apiKey: 'local-emulator-key',
           appId:
@@ -47,9 +49,13 @@ class LocalFirebase {
   /// SDK initialization failure never falls back to a cloud project or demo session.
   static Future<void> initialize() async {
     AppConfig.validate();
-    if (AppConfig.hostedTest && !kIsWeb) {
+    if (AppConfig.hostedTest &&
+        (kIsWeb
+            ? AppConfig.firebaseClientPlatform != 'web'
+            : defaultTargetPlatform != TargetPlatform.android ||
+                AppConfig.firebaseClientPlatform != 'android')) {
       throw StateError(
-          'Hosted test configuration currently supports the website only. Register and configure the Android test app before building a hosted APK.');
+          'This build has no matching Firebase configuration for its platform. Use the registered Android or web test application.');
     }
     final client = http.Client();
     try {

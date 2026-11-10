@@ -44,8 +44,11 @@ Without this setting, builds retain the informational preview with disabled logi
 without probing a visitor's localhost. Configured builds verify backend identity
 before Firebase initialization; errors never fall back to fake accounts or bookings.
 
-Hosted settings currently support WEB ONLY. Register and configure an Android test
-app before building a hosted APK. Existing native connected APKs retain local mode.
+Hosted settings support the website and the registered combined Android test app.
+The new `aerotrans-all-roles-online.apk` uses native Android SDK settings and the
+same backend/accounts. Existing local APK files remain available. See
+[online Android instructions](online-android.md) for build, install and device-test
+status; Android must use its own registered app ID rather than the web app ID.
 
 ## Accounts and acceptance
 
