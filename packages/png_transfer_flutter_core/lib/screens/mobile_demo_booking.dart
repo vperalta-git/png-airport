@@ -189,7 +189,13 @@ class _DemoBookingsState extends State<DemoBookings> {
               children: ['Arrivals', 'Departures', 'All transfers']
                   .map((value) => ChoiceChip(
                         key: ValueKey('transfer-lane-$value'),
-                        label: Text(value),
+                        label: Text(value,
+                            style: TextStyle(
+                                color: lane == value
+                                    ? Colors.white
+                                    : AviationColors.primaryNavy)),
+                        selectedColor: AviationColors.primaryNavy,
+                        checkmarkColor: Colors.white,
                         selected: lane == value,
                         onSelected: loading
                             ? null
@@ -263,7 +269,13 @@ class _DemoBookingsState extends State<DemoBookings> {
               runSpacing: 8,
               children: ['Active', 'History', 'All']
                   .map((label) => ChoiceChip(
-                      label: Text(label),
+                      label: Text(label,
+                          style: TextStyle(
+                              color: filter == label
+                                  ? Colors.white
+                                  : AviationColors.primaryNavy)),
+                      selectedColor: AviationColors.primaryNavy,
+                      checkmarkColor: Colors.white,
                       selected: filter == label,
                       onSelected: (_) => setState(() => filter = label)))
                   .toList()),

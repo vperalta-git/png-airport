@@ -9,6 +9,11 @@ website deployment/browser results are in AEROTRANS_PNG2_HOSTED_TEST_REPORT.md.
 See [hosted-test.md](hosted-test.md) for setup, test access and safety boundaries.
 Older local-only descriptions below apply to builds without hosted configuration.
 
+Arrivals and Departures are separate operational sections within each connected
+workspace. See [the workflow guide](arrivals-departures.md) and
+[verification report](../AEROTRANS_ARRIVALS_DEPARTURES_REPORT.md). Refresh open
+website tabs after deployment to load the updated contract and navigation.
+
 | Purpose | Repository path |
 | --- | --- |
 | Primary Flutter website project | apps/passenger_web |

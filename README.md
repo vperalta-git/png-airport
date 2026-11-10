@@ -21,6 +21,10 @@ The supplied live Firebase project remains untouched. See
 **[verification report](AEROTRANS_PNG2_HOSTED_TEST_REPORT.md)**. Test passwords and
 server credentials are excluded from this repository.
 
+Each role now has separate **Arrivals** (airport pickup) and **Departures**
+(Lae pickup, airport drop-off) sections, dedicated queues and direction-specific
+pickup verification. See [arrivals/departures guide](docs/arrivals-departures.md).
+
 ## Connected and offline review applications
 
 The unified backend-connected review app is now available in source at

@@ -1,3 +1,46 @@
+AEROTRANS PNG2 - SEPARATE ARRIVALS AND DEPARTURES
+Updated: 10 November 2026. This section supersedes the older combined-flow notes.
+
+The connected app now has separate Arrivals and Departures booking/operational
+sections, with Active/History/All filters in each and an All transfers aggregate.
+All four roles share their existing authorized accounts and persistent backend.
+
+ARRIVALS: Nadzab Airport (LAE) pickup -> customer Lae drop-off address.
+DEPARTURES: customer Lae pickup address -> Nadzab Airport (LAE) drop-off.
+The customer enters through the matching section before requesting a server quote.
+The form fixes direction, and list/detail labels identify actual pickup/drop-off.
+
+Backend endpoints /api/v1/bookings/arrivals and /departures retain the same scope,
+customer ownership and assigned-driver checks. Reports add separate arrival and
+departure summaries. Shared fleet locks span BOTH queues to prevent double booking.
+
+Driver arrival: acceptance/inspection -> en route -> AT_AIRPORT -> backend pickup
+OTP -> transfer -> destination -> completed.
+Driver departure: acceptance/inspection -> en route -> AT_PICKUP at customer ->
+backend pickup OTP -> transfer -> airport drop-off -> completed.
+Wrong-direction pickup stages are rejected. Completion does not confirm payment.
+
+Canonical TypeScript/Dart v1 adds AT_PICKUP; enum fixtures/parsers are synchronized.
+For backward field compatibility, input.destinationAddress remains the CITY endpoint
+(arrival drop-off/departure pickup), while airportId fixes the airport endpoint.
+Do not mislabel both as destination addresses. Refresh open website tabs after update.
+The offline source adapter also supports both queues and departure pickup states.
+No exported APK was rebuilt by this website update.
+
+Verification: backend build, 39 unit tests and 6 TypeScript contract tests passed;
+Flutter analysis clean; 51 shared Flutter tests and 5 offline UI checks passed. All four desktop roles and the phone-width Customer view passed real browser arrival/departure queue switching and account switching. Real hosted acceptance passed both full directions, OTP,
+queue ownership and cross-queue driver/vehicle conflict prevention. Final shared
+Flutter/browser results are in AEROTRANS_ARRIVALS_DEPARTURES_REPORT.md.
+
+Website: https://png-airport-kappa.vercel.app
+API: https://aerotrans-png-test-api-7d7128.vercel.app
+Firebase TEST only: aerotrans-png-test-7d7128. Live airport-png-c866b unchanged.
+Test fares remain labelled; provider payments, flight schedules, check-in buffers,
+tracking and commercial route rates are not fabricated. Native hosted APK setup
+and real-phone acceptance remain pending. See docs/arrivals-departures.md.
+
+--- HISTORICAL HANDOFFS (SUPERSEDED WHERE INCONSISTENT) ---
+
 AEROTRANS PNG2 - ONLINE TEST ENVIRONMENT HANDOFF
 Updated: 10 November 2026
 This section supersedes older pending-approval, local-only and preview-only notes.

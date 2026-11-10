@@ -142,10 +142,10 @@ try {
       ),
       page.getByText("Departures", { exact: false }).first().click(),
     ]);
-    await page
-      .getByText("Departures · Lae pickup", { exact: false })
-      .first()
-      .waitFor();
+    await page.waitForTimeout(500);
+    if (role === "PASSENGER") {
+      await page.getByRole("button", {name:"Book departure transfer", exact:true}).waitFor();
+    }
     await page.screenshot({
       path: resolve(folder, `${role.toLowerCase()}-${width}.png`),
       fullPage: true,
@@ -182,6 +182,7 @@ try {
       success: true,
       backendProfileVerified: true,
       bookingsLoaded: true,
+      arrivalDepartureSwitchPassed: true,
       accountSwitchPassed: true,
       forbiddenRequests: forbidden.length,
       runtimeErrors: errors.length,

@@ -1,5 +1,12 @@
 # Canonical API contract v1
 
+Arrivals/departures extension (10 November 2026): separate authenticated
+`GET /bookings/arrivals` and `/bookings/departures` queues retain existing scope
+and ownership. `AT_PICKUP` is the departure customer-location pickup state;
+`AT_AIRPORT` remains arrival airport pickup. Direction-specific transitions and
+backend OTP checks enforce this distinction. Dashboard responses add independent
+`arrivals` and `departures` summaries. See [arrivals-departures.md](arrivals-departures.md).
+
 Authority: packages/types/src/v1.ts and requests.ts. Public exports come from
 packages/types/src/index.ts; compiled package entrypoints are dist/index.js and
 dist/index.d.ts. npm backend build/test commands compile this shared package first.
