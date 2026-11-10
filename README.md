@@ -10,6 +10,9 @@ The NestJS backend is in **[backend](backend)**.
 **[Website build and hosting guide](docs/website.md)** explains the build command,
 hosting output folder and backend configuration still needed for public access.
 This is a Flutter Web application; the repository root is not a static HTML site.
+For Vercel, import the **repository root**, choose **Other**, and use the included
+**vercel.json**. The build script installs the pinned Flutter SDK and builds
+`apps/passenger_web/build/web`. Selecting `backend` imports the API instead.
 
 ## Connected and offline review applications
 

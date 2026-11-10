@@ -62,3 +62,6 @@ firebase-debug.log
 
 # Packaged Android demo APKs
 /Android APKs/
+
+# Vercel project metadata, SDK cache and generated deployment output
+.vercel/

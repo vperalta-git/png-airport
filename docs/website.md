@@ -18,6 +18,42 @@ Use the unified entrypoint for one website containing all four account flows.
 Workspace choices open real sign-in; backend permissions determine which account
 workspace opens. They do not grant access by selecting a role.
 
+## Vercel import settings
+
+Import vperalta-git/png-airport with these settings:
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | Repository root (`.`), not backend |
+| Framework Preset | Other |
+| Install Command | Use the repository's vercel.json value |
+| Build Command | bash scripts/vercel-build-web.sh |
+| Output Directory | apps/passenger_web/build/web |
+
+Root vercel.json configures a static Flutter build and SPA routing. The build
+script obtains the pinned Flutter 3.35.4 SDK, resolves Flutter dependencies, and
+builds the correct four-role entrypoint. It does not start or deploy NestJS.
+
+If the existing Vercel project was imported as backend, change Root Directory to
+the repository root in Project Settings, select Other as the framework, and remove
+the old NestJS/Node build overrides before redeploying the latest main commit.
+Changing vercel.json cannot change the project's dashboard Root Directory setting.
+Keep the full monorepo available so Flutter can find packages/png_transfer_flutter_core.
+
+The screenshot's No entrypoint found error comes from a Node/NestJS build attempt,
+not Flutter website compilation. The API source does contain backend/src/main.ts;
+adding a second Node entrypoint is not the website fix. npm deprecation warnings
+are separate from that fatal detection error.
+
+This configuration addresses frontend build selection and packaging. The hosted
+backend limitation below still applies: a successfully hosted frontend alone
+cannot authenticate or load operational data with the current local-only runtime.
+
+Verification: Bash syntax and JSON checks passed. The complete build script ran
+successfully with the installed pinned Flutter SDK and generated build/web in
+38 seconds. The cold SDK download and an actual Vercel deployment were not run
+from this workspace; the dashboard root/framework settings must still be corrected.
+
 ## Build the website
 
 Install a compatible Flutter SDK and resolve dependencies in apps/passenger_web:

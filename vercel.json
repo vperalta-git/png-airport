@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "node -e \"console.log('Flutter dependencies are resolved by the web build script')\"",
+  "buildCommand": "bash scripts/vercel-build-web.sh",
+  "outputDirectory": "apps/passenger_web/build/web",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
