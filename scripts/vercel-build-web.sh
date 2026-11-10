@@ -37,7 +37,14 @@ if [[ ! -d "$sdk_path/.git" && -z "${FLUTTER_SDK_PATH:-}" ]]; then
   git -C "$sdk_path" reset --mixed --quiet "$flutter_version"
 fi
 
-sdk_version="$(git -C "$sdk_path" describe --tags --exact-match || true)"
+sdk_version="$(git -C "$sdk_path" describe --tags --exact-match 2>/dev/null || true)"
+if [[ "$sdk_version" != "$flutter_version" && -z "${FLUTTER_SDK_PATH:-}" ]]; then
+  # Some caches retain .git/HEAD but prune its tag refs. Fetching this one tag
+  # repairs that metadata without changing the SDK working tree or its HEAD.
+  printf 'Restoring the pinned Flutter version tag in the generated SDK cache.\n'
+  git -C "$sdk_path" fetch --depth 1 https://github.com/flutter/flutter.git "refs/tags/$flutter_version:refs/tags/$flutter_version"
+  sdk_version="$(git -C "$sdk_path" describe --tags --exact-match || true)"
+fi
 if [[ "$sdk_version" != "$flutter_version" ]]; then
   printf 'Expected Flutter %s; the supplied SDK has tag %s.\n' "$flutter_version" "$sdk_version" >&2
   exit 1
