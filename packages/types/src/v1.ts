@@ -20,6 +20,7 @@ export const BOOKING_STATUSES = [
   "DISPATCHED",
   "DRIVER_EN_ROUTE",
   "AT_AIRPORT",
+  "AT_PICKUP",
   "PASSENGER_VERIFIED",
   "TRANSFER_IN_PROGRESS",
   "ARRIVED_DESTINATION",
@@ -397,6 +398,7 @@ export function canTransition(
   role: UserRole,
   from: BookingStatus,
   to: BookingStatus,
+  direction: TransferInput["direction"] = "INBOUND_AIRPORT_TO_CITY",
 ): boolean {
   if (
     role === "PASSENGER" &&
@@ -423,12 +425,17 @@ export function canTransition(
       (from === "CONFIRMED" && to === "DISPATCHED"))
   )
     return true;
-  // AT_AIRPORT -> PASSENGER_VERIFIED is deliberately not a generic state change.
+  if (to === "AT_AIRPORT" && direction !== "INBOUND_AIRPORT_TO_CITY")
+    return false;
+  if (to === "AT_PICKUP" && direction !== "OUTBOUND_CITY_TO_AIRPORT")
+    return false;
+  // Pickup verification is deliberately not a generic state change.
   return (
     role === "DRIVER" &&
     [
       "DISPATCHED:DRIVER_EN_ROUTE",
       "DRIVER_EN_ROUTE:AT_AIRPORT",
+      "DRIVER_EN_ROUTE:AT_PICKUP",
       "PASSENGER_VERIFIED:TRANSFER_IN_PROGRESS",
       "TRANSFER_IN_PROGRESS:ARRIVED_DESTINATION",
       "ARRIVED_DESTINATION:COMPLETED",

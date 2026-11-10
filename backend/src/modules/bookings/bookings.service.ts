@@ -236,7 +236,10 @@ export class BookingsService {
     this.visible(actor, booking);
     return booking;
   }
-  async list(actor: Actor): Promise<Booking[]> {
+  async list(
+    actor: Actor,
+    direction?: "INBOUND_AIRPORT_TO_CITY" | "OUTBOUND_CITY_TO_AIRPORT",
+  ): Promise<Booking[]> {
     const rows = await this.db
       .collection("bookings")
       .where("organizationId", "==", actor.organizationId)
@@ -244,6 +247,7 @@ export class BookingsService {
     return rows.docs
       .map((d) => parseBooking(d.data()))
       .filter((b) => canReadBooking(actor, b))
+      .filter((b) => !direction || b.input.direction === direction)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
   async details(bookingId: string, actor: Actor) {
@@ -514,7 +518,7 @@ export class BookingsService {
         throw new ForbiddenException("Assigned driver required");
       if (b.status === target) return b;
       this.revision(b, data.expectedRevision);
-      if (!canTransition(role, b.status, target))
+      if (!canTransition(role, b.status, target, b.input.direction))
         throw new ConflictException("This status transition is not permitted");
       if (target === "DRIVER_EN_ROUTE" && !b.dispatch?.acceptedAt)
         throw new ConflictException(
@@ -560,7 +564,14 @@ export class BookingsService {
         throw new ForbiddenException("Assigned driver required");
       this.revision(b, data.expectedRevision);
       const c = challengeRow.data();
-      if (b.status !== "AT_AIRPORT" || !c || c.used)
+      if (
+        b.status !==
+          (b.input.direction === "OUTBOUND_CITY_TO_AIRPORT"
+            ? "AT_PICKUP"
+            : "AT_AIRPORT") ||
+        !c ||
+        c.used
+      )
         throw new ConflictException(
           "Pickup verification is not available at this stage",
         );
@@ -609,9 +620,14 @@ export class BookingsService {
       const b = parseBooking(row.data());
       this.visible(actor, b);
       this.revision(b, data.expectedRevision);
-      if (b.status !== "AT_AIRPORT")
+      if (
+        b.status !==
+        (b.input.direction === "OUTBOUND_CITY_TO_AIRPORT"
+          ? "AT_PICKUP"
+          : "AT_AIRPORT")
+      )
         throw new ConflictException(
-          "Reissue is permitted only before boarding at the airport",
+          "Reissue is permitted only before passenger pickup",
         );
       const previous = (
         await tx.get(this.db.collection("pickup_challenges").doc(bookingId))

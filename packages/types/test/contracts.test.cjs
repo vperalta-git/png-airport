@@ -26,6 +26,54 @@ test("TypeScript parses the same versioned fixtures as Nest and Dart", () => {
   assert.equal(parseBooking(booking).id, "BK-test-only");
   assert.equal(parseQuotation(quote).pricing.totalMinor, 12345);
 });
+
+test("arrivals and departures use different pickup stages and both require OTP", () => {
+  assert.equal(
+    canTransition(
+      "DRIVER",
+      "DRIVER_EN_ROUTE",
+      "AT_AIRPORT",
+      "INBOUND_AIRPORT_TO_CITY",
+    ),
+    true,
+  );
+  assert.equal(
+    canTransition(
+      "DRIVER",
+      "DRIVER_EN_ROUTE",
+      "AT_PICKUP",
+      "OUTBOUND_CITY_TO_AIRPORT",
+    ),
+    true,
+  );
+  assert.equal(
+    canTransition(
+      "DRIVER",
+      "DRIVER_EN_ROUTE",
+      "AT_AIRPORT",
+      "OUTBOUND_CITY_TO_AIRPORT",
+    ),
+    false,
+  );
+  assert.equal(
+    canTransition(
+      "DRIVER",
+      "DRIVER_EN_ROUTE",
+      "AT_PICKUP",
+      "INBOUND_AIRPORT_TO_CITY",
+    ),
+    false,
+  );
+  assert.equal(
+    canTransition(
+      "DRIVER",
+      "AT_PICKUP",
+      "PASSENGER_VERIFIED",
+      "OUTBOUND_CITY_TO_AIRPORT",
+    ),
+    false,
+  );
+});
 test("contracts reject numeric/missing IDs, invalid enums, money and timestamps", () => {
   for (const patch of [
     { id: 1 },

@@ -161,7 +161,7 @@ try {
   evidence.registrationUid = profile.uid;
   save();
   pass("Customer registration creates a real scoped passenger account");
-  const reserve = async () => {
+  const reserve = async (direction = "INBOUND_AIRPORT_TO_CITY") => {
     const quote = await call(
       "POST",
       "/quotes",
@@ -170,7 +170,7 @@ try {
         schemaVersion: "1",
         input: {
           airportId: "airport_nadzab_lae",
-          direction: "INBOUND_AIRPORT_TO_CITY",
+          direction,
           vehicleCategory: "STANDARD_SEDAN",
           securityEscortType: "NONE",
           pickupDateTime: new Date(Date.now() + 7200000).toISOString(),
@@ -289,6 +289,21 @@ try {
   pass(
     "Control Room assigns available resources; driver acceptance precedes progress",
   );
+  const departureReservation = await reserve("OUTBOUND_CITY_TO_AIRPORT");
+  await call(
+    "POST",
+    "/dispatch/" + departureReservation.booking.id + "/assign",
+    people.DISPATCHER.token,
+    {
+      driverId: driver.id,
+      vehicleId: vehicle.id,
+      expectedRevision: departureReservation.booking.revision,
+    },
+    409,
+  );
+  pass(
+    "Arrival and departure dispatch share resource locks and prevent cross-queue double booking",
+  );
   await call(
     "GET",
     "/bookings/" + booking.id + "/pickup-credential",
@@ -349,6 +364,97 @@ try {
     history.every((b) => b.dispatch?.assignedDriverId === people.DRIVER.uid),
   );
   const cancelled = await reserve();
+  let departure = await call(
+    "POST",
+    "/dispatch/" + departureReservation.booking.id + "/assign",
+    people.DISPATCHER.token,
+    {
+      driverId: driver.id,
+      vehicleId: vehicle.id,
+      expectedRevision: departureReservation.booking.revision,
+    },
+    201,
+  );
+  departure = await call(
+    "POST",
+    "/dispatch/" + departure.id + "/acknowledge",
+    people.DRIVER.token,
+    {
+      inspection: { seatbelts: true, tyres: true, fuel: true, radio: true },
+      expectedRevision: departure.revision,
+    },
+    201,
+  );
+  departure = await call(
+    "PATCH",
+    "/bookings/" + departure.id + "/status",
+    people.DRIVER.token,
+    { status: "DRIVER_EN_ROUTE", expectedRevision: departure.revision },
+  );
+  await call(
+    "PATCH",
+    "/bookings/" + departure.id + "/status",
+    people.DRIVER.token,
+    { status: "AT_AIRPORT", expectedRevision: departure.revision },
+    409,
+  );
+  departure = await call(
+    "PATCH",
+    "/bookings/" + departure.id + "/status",
+    people.DRIVER.token,
+    { status: "AT_PICKUP", expectedRevision: departure.revision },
+  );
+  const departureCode = await call(
+    "GET",
+    "/bookings/" + departure.id + "/pickup-credential",
+    customer.token,
+  );
+  departure = await call(
+    "POST",
+    "/bookings/" + departure.id + "/verify-passenger",
+    people.DRIVER.token,
+    { code: departureCode.code, expectedRevision: departure.revision },
+    201,
+  );
+  for (const status of [
+    "TRANSFER_IN_PROGRESS",
+    "ARRIVED_DESTINATION",
+    "COMPLETED",
+  ])
+    departure = await call(
+      "PATCH",
+      "/bookings/" + departure.id + "/status",
+      people.DRIVER.token,
+      { status, expectedRevision: departure.revision },
+    );
+  assert.equal(departure.payment.status, "PENDING");
+  const arrivals = await call(
+    "GET",
+    "/bookings/arrivals",
+    people.DISPATCHER.token,
+  );
+  const departures = await call(
+    "GET",
+    "/bookings/departures",
+    people.DISPATCHER.token,
+  );
+  assert.ok(
+    arrivals.every((b) => b.input.direction === "INBOUND_AIRPORT_TO_CITY"),
+  );
+  assert.ok(
+    departures.every((b) => b.input.direction === "OUTBOUND_CITY_TO_AIRPORT"),
+  );
+  assert.ok(
+    departures.some((b) => b.id === departure.id && b.status === "COMPLETED"),
+  );
+  assert.ok(
+    !(await call("GET", "/bookings/departures", people.PASSENGER.token)).some(
+      (b) => b.id === departure.id,
+    ),
+  );
+  pass(
+    "Departure completes customer pickup, OTP and airport drop-off; queues retain ownership isolation",
+  );
   assert.equal(
     (
       await call(
@@ -371,6 +477,8 @@ try {
   const audit = await call("GET", "/reports/audit", people.SUPERVISOR.token);
   assert.ok(summary.completedTrips >= 1);
   assert.ok(summary.cancelledTrips >= 1);
+  assert.ok(summary.arrivals.completedTrips >= 1);
+  assert.ok(summary.departures.completedTrips >= 1);
   assert.ok(Array.isArray(audit));
   assert.ok(
     (await call("GET", "/users", people.SUPERVISOR.token)).some(

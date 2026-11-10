@@ -18,6 +18,12 @@ export class BookingsController {
   @Get() list(@CurrentUser() a: AuthenticatedUser) {
     return this.bookings.list(a);
   }
+  @Get("arrivals") arrivals(@CurrentUser() a: AuthenticatedUser) {
+    return this.bookings.list(a, "INBOUND_AIRPORT_TO_CITY");
+  }
+  @Get("departures") departures(@CurrentUser() a: AuthenticatedUser) {
+    return this.bookings.list(a, "OUTBOUND_CITY_TO_AIRPORT");
+  }
   @Get(":id") get(
     @Param("id") id: string,
     @CurrentUser() a: AuthenticatedUser,

@@ -19,6 +19,12 @@ export class ReportsService {
       this.resources.vehicles(actor),
     ]);
     return {
+      arrivals: this.laneSummary(
+        jobs.filter((b) => b.input.direction === "INBOUND_AIRPORT_TO_CITY"),
+      ),
+      departures: this.laneSummary(
+        jobs.filter((b) => b.input.direction === "OUTBOUND_CITY_TO_AIRPORT"),
+      ),
       bookings: jobs.length,
       awaitingAssignment: jobs.filter(
         (b) =>
@@ -39,6 +45,27 @@ export class ReportsService {
       verifiedPayments: jobs.filter((b) => b.payment.status === "PAID").length,
       availableDrivers: drivers.filter((d) => d.available).length,
       availableVehicles: vehicles.filter((v) => v.available).length,
+    };
+  }
+  private laneSummary(jobs: Awaited<ReturnType<BookingsService["list"]>>) {
+    return {
+      bookings: jobs.length,
+      awaitingAssignment: jobs.filter(
+        (b) =>
+          !b.dispatch &&
+          !["CANCELLED", "COMPLETED", "CLOSED"].includes(b.status),
+      ).length,
+      activeTrips: jobs.filter(
+        (b) =>
+          b.dispatch &&
+          !["CANCELLED", "COMPLETED", "CLOSED"].includes(b.status),
+      ).length,
+      completedTrips: jobs.filter((b) =>
+        ["COMPLETED", "CLOSED"].includes(b.status),
+      ).length,
+      cancelledTrips: jobs.filter((b) => b.status === "CANCELLED").length,
+      pendingPayments: jobs.filter((b) => b.payment.status === "PENDING")
+        .length,
     };
   }
   async audit(actor: Actor) {
