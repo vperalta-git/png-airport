@@ -13,6 +13,9 @@ export DART_SUPPRESS_ANALYTICS=true
 # This build targets web; it must not depend on desktop plugin symlink privileges.
 export FLUTTER_WINDOWS=false
 export FLUTTER_LINUX=false
+# Flutter invokes Git inside its own SDK; repository variables inherited from CI
+# must not redirect those commands into the application checkout.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
 
 if [[ ! -x "$sdk_path/bin/flutter" ]]; then
   if [[ -e "$sdk_path" ]]; then
@@ -24,7 +27,17 @@ if [[ ! -x "$sdk_path/bin/flutter" ]]; then
     https://github.com/flutter/flutter.git "$sdk_path"
 fi
 
-sdk_version="$(git -C "$sdk_path" describe --tags --exact-match 2>/dev/null || true)"
+# Vercel can restore SDK files while omitting nested .git directories. Restore
+# only the generated cache's metadata from the official pinned tag. Preserve the
+# cached engine/downloads and never rewrite a caller-supplied SDK.
+if [[ ! -d "$sdk_path/.git" && -z "${FLUTTER_SDK_PATH:-}" ]]; then
+  printf 'Restoring pinned Flutter SDK Git metadata in the generated cache.\n'
+  git init --quiet "$sdk_path"
+  git -C "$sdk_path" fetch --depth 1 https://github.com/flutter/flutter.git "refs/tags/$flutter_version:refs/tags/$flutter_version"
+  git -C "$sdk_path" reset --mixed --quiet "$flutter_version"
+fi
+
+sdk_version="$(git -C "$sdk_path" describe --tags --exact-match || true)"
 if [[ "$sdk_version" != "$flutter_version" ]]; then
   printf 'Expected Flutter %s; the supplied SDK has tag %s.\n' "$flutter_version" "$sdk_version" >&2
   exit 1
